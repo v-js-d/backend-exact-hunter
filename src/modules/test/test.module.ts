@@ -3,7 +3,7 @@ import { TestService } from './test.service';
 import { TestController } from './test.controller';
 
 @Module({
-  controllers: [TestController],
-  providers: [TestService],
+	controllers: [TestController],
+	providers: [TestService],
 })
 export class TestModule {}
