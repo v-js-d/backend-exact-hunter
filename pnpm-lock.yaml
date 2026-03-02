@@ -98,6 +98,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.11)(typescript@5.9.3)
+      tsc-files:
+        specifier: ^1.1.4
+        version: 1.1.4(typescript@5.9.3)
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -3985,6 +3988,13 @@ packages:
         optional: true
       '@swc/wasm':
         optional: true
+
+  tsc-files@1.1.4:
+    resolution:
+      { integrity: sha512-RePsRsOLru3BPpnf237y1Xe1oCGta8rmSYzM76kYo5tLGsv5R2r3s64yapYorGTPuuLyfS9NVbh9ydzmvNie2w== }
+    hasBin: true
+    peerDependencies:
+      typescript: '>=3'
 
   tsconfig-paths-webpack-plugin@4.2.0:
     resolution:
@@ -7962,6 +7972,10 @@ snapshots:
       typescript: 5.9.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+
+  tsc-files@1.1.4(typescript@5.9.3):
+    dependencies:
+      typescript: 5.9.3
 
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:
