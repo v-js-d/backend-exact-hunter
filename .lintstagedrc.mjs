@@ -1,5 +1,5 @@
 const config = {
-	'*.ts': ['eslint --fix', 'prettier --write', () => 'pnpm typecheck'],
+	'**/*.ts': ['eslint --fix', 'prettier --write', 'tsc-files --noEmit'],
 
 	'*': 'prettier --write --ignore-unknown',
 };
