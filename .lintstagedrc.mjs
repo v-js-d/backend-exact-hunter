@@ -1,6 +1,7 @@
-export default {
-	'*.{ts}': ['eslint --fix', 'prettier --write', 'tsc-files --noEmit --pretty'],
+const config = {
+	'*.ts': ['eslint --fix', 'prettier --write', () => 'tsc --noEmit'],
+
 	'*': 'prettier --write --ignore-unknown',
 };
-// 'tsc-files -p tsconfig.json --noEmit --pretty',
-// () => 'tsc -p tsconfig.json --noEmit --pretty'
+
+export default config;
