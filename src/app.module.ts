@@ -10,7 +10,7 @@ import { TestModule } from './modules/test/test.module';
 		TestModule,
 		ConfigModule.forRoot({
 			validationSchema: Joi.object({
-				PORT: Joi.number().port().default(3000),
+				PORT: Joi.number().port().required(),
 			}),
 			validationOptions: {
 				allowUnknown: true,
