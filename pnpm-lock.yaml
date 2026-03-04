@@ -36,6 +36,9 @@ importers:
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.39.2
+      '@jonasgeiler/tsc-files':
+        specifier: ^2.3.1
+        version: 2.3.1
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.16(@types/node@22.19.11)
@@ -624,6 +627,12 @@ packages:
   '@jest/types@30.2.0':
     resolution: {integrity: sha512-H9xg1/sfVvyfU7o3zMfBEjQ1gcsdeTMgqHoYdN79tuLqfTtuu7WckRA1R5whDwOzxaZAeMKTYWqP+WCAi0CHsg==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
+  '@jonasgeiler/tsc-files@2.3.1':
+    resolution:
+      { integrity: sha512-uQL3XQIZ0ii0pc2wn1NcRWpXfSpkwYpgw11bNvx1qmHHIU2fGhm7ZJd28bLpJedbsACDx/VkgvwOdH2rPX+V7Q== }
+    engines: { node: '>=18' }
+    hasBin: true
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -4181,6 +4190,8 @@ snapshots:
       '@types/node': 22.19.11
       '@types/yargs': 17.0.35
       chalk: 4.1.2
+
+  '@jonasgeiler/tsc-files@2.3.1': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

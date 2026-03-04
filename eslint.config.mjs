@@ -31,10 +31,11 @@ export default defineConfig(
 		},
 		rules: {
 			'import/no-default-export': 'error',
-			'@typescript-eslint/no-explicit-any': 'off',
+			'import/order': 'error',
+			'@typescript-eslint/no-explicit-any': 'error',
 			'@typescript-eslint/no-floating-promises': 'warn',
 			'@typescript-eslint/no-unsafe-argument': 'warn',
-			'no-console': 'warn',
+			'no-console': 'error',
 			eqeqeq: 'error',
 			'no-else-return': 'warn',
 			'array-callback-return': 'error',
