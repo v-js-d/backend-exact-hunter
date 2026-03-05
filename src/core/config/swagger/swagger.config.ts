@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
-
+import { SWAGGER_PATH, SWAGGER_TITLE, SWAGGER_DESCRIPTION, SWAGGER_VERSION, SWAGGER_TAG } from './swagger.consts';
 export const getSwaggerConfig = (app: INestApplication): void => {
 	const config = new DocumentBuilder()
-		.setTitle('Exact Hunter backend')
-		.setDescription('API for exact hunter backend')
-		.setVersion('1.0')
-		.addTag('exact-hunter')
+		.setTitle(SWAGGER_TITLE)
+		.setDescription(SWAGGER_DESCRIPTION)
+		.setVersion(SWAGGER_VERSION)
+		.addTag(SWAGGER_TAG)
 		.build();
 
 	const options: SwaggerDocumentOptions = {
@@ -17,7 +17,7 @@ export const getSwaggerConfig = (app: INestApplication): void => {
 	};
 
 	const documentFactory = () => SwaggerModule.createDocument(app, config, options);
-	SwaggerModule.setup('api', app, documentFactory());
+	SwaggerModule.setup(SWAGGER_PATH, app, documentFactory());
 };
 
 const clearControllerName = (controllerKey: string): string => {

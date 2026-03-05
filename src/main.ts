@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-
+import { getSwaggerConfig, getValidationConfig } from '@core/config';
+import { AppModule } from '@/app.module';
+const PORT = process.env.PORT ?? 3000;
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	await app.listen(process.env.PORT ?? 3000);
+
+	getSwaggerConfig(app);
+	getValidationConfig(app);
+	await app.listen(PORT);
 }
 
 bootstrap().catch((err) => {
