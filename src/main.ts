@@ -1,13 +1,19 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { getSwaggerConfig, getValidationConfig } from '@core/config';
 import { AppModule } from '@/app.module';
-const PORT = process.env.PORT ?? 3000;
+const DEFAULT_PORT = 3000;
+
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
+	const configService = app.get(ConfigService);
 	getSwaggerConfig(app);
 	getValidationConfig(app);
-	await app.listen(PORT);
+
+	const port = configService.get<number>('PORT');
+
+	await app.listen(port ?? DEFAULT_PORT);
 }
 
 bootstrap().catch((err) => {
