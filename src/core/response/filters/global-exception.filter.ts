@@ -1,14 +1,21 @@
-import { ArgumentsHost, BadRequestException, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import {
+	ArgumentsHost,
+	BadRequestException,
+	Catch,
+	ExceptionFilter,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from '@nestjs/common';
 
 import { Request, Response } from 'express';
 import { IResponseError } from '../interface/response.interface';
 import { GlobalExceptionFilterLogger } from './lib/global-exception.log.util';
 
 @Catch()
+@Injectable()
 export class GlobalExceptionFilter implements ExceptionFilter {
-	private readonly logger = new GlobalExceptionFilterLogger();
-
-	constructor() {}
+	constructor(private readonly logger: GlobalExceptionFilterLogger) {}
 
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
@@ -45,7 +52,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 				? (res as { message: string | string[] }).message
 				: [];
 
-		this.logger.logException(true, request, undefined, messageArray);
+		this.logger.logValidationError(request, messageArray);
 
 		const responseBody: IResponseError = {
 			message: 'Validation failed',
@@ -55,7 +62,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 	}
 
 	private handleGenericException(error: Error, request: Request, response: Response, status: HttpStatus): Response {
-		this.logger.logException(false, request, error);
+		const isChromeProbe =
+			status === HttpStatus.NOT_FOUND && request.url === '/.well-known/appspecific/com.chrome.devtools.json';
+
+		if (!isChromeProbe) {
+			this.logger.logError(request, error);
+		}
 
 		const responseBody: IResponseError = {
 			message: error.message,

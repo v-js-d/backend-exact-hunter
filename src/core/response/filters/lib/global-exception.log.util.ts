@@ -7,24 +7,17 @@ export class GlobalExceptionFilterLogger {
 
 	constructor() {}
 
-	public logException(
-		isValidationError = false,
-
+	public logError(request: Request, error: Error) {
+		const logMessage = this.getErrorLogMessage(error, request);
+		this.logger.error(logMessage);
+	}
+	public logValidationError(
 		request: Request,
-		error?: Error,
-		message?: string[] | string,
+
+		message: string[] | string,
 	) {
-		if (isValidationError) {
-			if (message) {
-				const logMessage = this.getValidationErrorLogMessage(request, message);
-				this.logger.warn(logMessage);
-			}
-		} else {
-			if (error) {
-				const logMessage = this.getErrorLogMessage(error, request);
-				this.logger.error(logMessage);
-			}
-		}
+		const logMessage = this.getValidationErrorLogMessage(request, message);
+		this.logger.warn(logMessage);
 	}
 
 	private getValidationErrorLogMessage(request: Request, message: string[] | string) {

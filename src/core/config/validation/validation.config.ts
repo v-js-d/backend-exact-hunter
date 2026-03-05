@@ -4,7 +4,7 @@ export const getValidationConfig = (app: INestApplication) => {
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
-			forbidNonWhitelisted: false,
+			forbidNonWhitelisted: true,
 			forbidUnknownValues: true,
 			transform: true,
 			transformOptions: { enableImplicitConversion: true },

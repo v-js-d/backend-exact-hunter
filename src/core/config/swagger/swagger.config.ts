@@ -7,6 +7,15 @@ export const getSwaggerConfig = (app: INestApplication): void => {
 		.setDescription(SWAGGER_DESCRIPTION)
 		.setVersion(SWAGGER_VERSION)
 		.addTag(SWAGGER_TAG)
+		.addBearerAuth(
+			{
+				type: 'http',
+				scheme: 'bearer',
+				bearerFormat: 'JWT',
+				description: 'JWT access token',
+			},
+			'bearer',
+		)
 		.build();
 
 	const options: SwaggerDocumentOptions = {
