@@ -16,23 +16,6 @@ import { GlobalExceptionFilterLogger } from './lib/global-exception.log.util';
 @Injectable()
 export class GlobalExceptionFilter implements ExceptionFilter {
 	constructor(private readonly logger: GlobalExceptionFilterLogger) {}
-
-	catch(exception: unknown, host: ArgumentsHost) {
-		const ctx = host.switchToHttp();
-		const request: Request = ctx.getRequest<Request>();
-		const response: Response = ctx.getResponse<Response>();
-		const status: HttpStatus = this.getStatusCode(exception);
-		const error: Error = this.getErrorResponse(exception);
-
-		// Обработка валидационных ошибок
-		if (exception instanceof BadRequestException && typeof exception.getResponse === 'function') {
-			return this.handleValidationException(exception, request, response);
-		}
-
-		// Обработка всех остальных ошибок
-		return this.handleGenericException(error, request, response, status);
-	}
-
 	private getStatusCode(exception: unknown): HttpStatus {
 		if (exception instanceof HttpException) {
 			return exception.getStatus();
@@ -74,5 +57,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 			errors: [],
 		};
 		return response.status(status).json(responseBody);
+	}
+
+	catch(exception: unknown, host: ArgumentsHost) {
+		const ctx = host.switchToHttp();
+		const request: Request = ctx.getRequest<Request>();
+		const response: Response = ctx.getResponse<Response>();
+		const status: HttpStatus = this.getStatusCode(exception);
+		const error: Error = this.getErrorResponse(exception);
+
+		// Обработка валидационных ошибок
+		if (exception instanceof BadRequestException && typeof exception.getResponse === 'function') {
+			return this.handleValidationException(exception, request, response);
+		}
+
+		// Обработка всех остальных ошибок
+		return this.handleGenericException(error, request, response, status);
 	}
 }

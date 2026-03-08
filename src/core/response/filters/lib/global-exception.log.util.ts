@@ -4,22 +4,6 @@ import { Request } from 'express';
 
 export class GlobalExceptionFilterLogger {
 	private readonly logger = new Logger(GlobalExceptionFilterLogger.name);
-
-	constructor() {}
-
-	public logError(request: Request, error: Error) {
-		const logMessage = this.getErrorLogMessage(error, request);
-		this.logger.error(logMessage);
-	}
-	public logValidationError(
-		request: Request,
-
-		message: string[] | string,
-	) {
-		const logMessage = this.getValidationErrorLogMessage(request, message);
-		this.logger.warn(logMessage);
-	}
-
 	private getValidationErrorLogMessage(request: Request, message: string[] | string) {
 		const validationMessages = Array.isArray(message) ? message.join('\n- ') : String(message);
 
@@ -57,5 +41,17 @@ export class GlobalExceptionFilterLogger {
 
 		const message = `⚠️ Ошибка: ${error.name}\n\n📄 Файл: ${file}\n🔢 Строка: ${String(line)}\n🔧 Функция: ${func}\n\n💥 Код: ${code}\n\n📬 Сообщение: ${error.message}\n\n📍 URL: ${request.method} ${request.url}\n🧭 User-Agent: ${userAgent}\n🌍 IP: ${String(ip)}\n🔗 Referer: ${referer}`;
 		return message;
+	}
+	public logError(request: Request, error: Error) {
+		const logMessage = this.getErrorLogMessage(error, request);
+		this.logger.error(logMessage);
+	}
+	public logValidationError(
+		request: Request,
+
+		message: string[] | string,
+	) {
+		const logMessage = this.getValidationErrorLogMessage(request, message);
+		this.logger.warn(logMessage);
 	}
 }

@@ -6,7 +6,7 @@ import { GlobalExceptionFilterLogger } from '@core/response/filters/lib/global-e
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TestModule } from '@/modules/test/test.module';
-import { SmokeModule } from '@/modules/smoke/smoke.module';
+import { SmokeModule } from '@/modules/smoke/';
 
 @Module({
 	imports: [

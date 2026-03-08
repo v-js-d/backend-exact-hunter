@@ -1,14 +1,12 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-	SmokeErrorQueryDto,
-	SmokeHealthResponseDto,
-	SmokeValidateRequestDto,
-	SmokeValidateResponseDto,
-} from './smoke.dto';
-import { SmokeService } from './smoke.service';
-import { ApiSuccessResponse } from '@/core/decorators/response/api-success-response.decorator';
+import { SmokeService } from '../services/smoke.service';
+import { SmokeValidateRequestDto } from '../dto/smoke-validate-request.dto';
+import { SmokeErrorQueryDto } from '../dto/smoke-error-query.dto';
+import { SmokeHealthResponseDto } from '../dto/smoke-health-response.dto';
+import { SmokeValidateResponseDto } from '../dto/smoke-validate-response.dto';
 import { ApiErrorResponse } from '@/core/decorators/response/api-error-response.decorator';
+import { ApiSuccessResponse } from '@/core/decorators/response/api-success-response.decorator';
 
 @ApiTags('smoke')
 @Controller('smoke')
