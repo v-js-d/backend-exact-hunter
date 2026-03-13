@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { SmokeController } from '../controllers/smoke.conroller';
-import { SmokeService } from '../services/smoke.service';
+import { SmokeController } from './controllers/smoke.conroller';
+import { SmokeService } from './services/smoke.service';
 
 @Module({
 	controllers: [SmokeController],

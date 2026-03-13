@@ -5,8 +5,7 @@ import { SmokeValidateRequestDto } from '../dto/smoke-validate-request.dto';
 import { SmokeErrorQueryDto } from '../dto/smoke-error-query.dto';
 import { SmokeHealthResponseDto } from '../dto/smoke-health-response.dto';
 import { SmokeValidateResponseDto } from '../dto/smoke-validate-response.dto';
-import { ApiErrorResponse } from '@/core/decorators/response/api-error-response.decorator';
-import { ApiSuccessResponse } from '@/core/decorators/response/api-success-response.decorator';
+import { ApiErrorResponse, ApiSuccessResponse } from '@/common';
 
 @ApiTags('smoke')
 @Controller('smoke')

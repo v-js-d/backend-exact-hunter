@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { GlobalExceptionFilter } from '@core/response';
-import { GlobalExceptionFilterLogger } from '@core/response/filters/lib/global-exception.log.util';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
+
 import { TestModule } from '@/modules/test/test.module';
 import { SmokeModule } from '@/modules/smoke/';
 
@@ -22,7 +20,7 @@ import { SmokeModule } from '@/modules/smoke/';
 		TestModule,
 		SmokeModule,
 	],
-	controllers: [AppController],
-	providers: [AppService, GlobalExceptionFilter, GlobalExceptionFilterLogger],
+
+	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })
 export class AppModule {}

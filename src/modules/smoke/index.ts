@@ -1,1 +1,1 @@
-export * from './module/smoke.module';
+export * from './smoke.module';

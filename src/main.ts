@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { getCorsConfig, getSwaggerConfig, getValidationConfig } from '@core/config';
 import { GlobalExceptionFilter, ResponseInterceptor } from '@core/response';
 import { AppModule } from '@/app.module';
+
 const DEFAULT_PORT = 3000;
 
 async function bootstrap() {
