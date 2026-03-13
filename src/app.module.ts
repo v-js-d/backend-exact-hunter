@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { TestModule } from './modules/test/test.module';
+import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
+
+import { TestModule } from '@/modules/test/test.module';
+import { SmokeModule } from '@/modules/smoke/';
 
 @Module({
 	imports: [
-		TestModule,
 		ConfigModule.forRoot({
 			validationSchema: Joi.object({
 				PORT: Joi.number().port().required(),
@@ -17,8 +17,10 @@ import { TestModule } from './modules/test/test.module';
 				abortEarly: false,
 			},
 		}),
+		TestModule,
+		SmokeModule,
 	],
-	controllers: [AppController],
-	providers: [AppService],
+
+	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })
 export class AppModule {}
