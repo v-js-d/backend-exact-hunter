@@ -4,7 +4,7 @@ import { getCorsConfig, getSwaggerConfig, getValidationConfig } from '@core/conf
 import { GlobalExceptionFilter, ResponseInterceptor } from '@core/response';
 import { AppModule } from '@/app.module';
 
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3001;
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
