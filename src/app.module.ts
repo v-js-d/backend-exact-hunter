@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
-
-import { TestModule } from '@/modules/test/test.module';
+import { HealthModule } from '@/modules/health/health.module';
 import { SmokeModule } from '@/modules/smoke/';
 
 @Module({
@@ -17,10 +16,9 @@ import { SmokeModule } from '@/modules/smoke/';
 				abortEarly: false,
 			},
 		}),
-		TestModule,
+		HealthModule,
 		SmokeModule,
 	],
-
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })
 export class AppModule {}
