@@ -1,6 +1,6 @@
 services:
-  postgres:
-    container_name: postgres
+  exact-hunter-postgres:
+    container_name: exact-hunter-postgres
     image: postgres:18
     env_file:
       - .env
@@ -9,7 +9,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -17,8 +17,8 @@ services:
     networks:
       - exactHunter
 
-  backend:
-    container_name: backend
+  exact-hunter-backend:
+    container_name: exact-hunter-backend
     build: .
     restart: always
     networks:
@@ -27,15 +27,21 @@ services:
       - .env
     ports:
       - 3001:3001
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
     depends_on:
-      postgres:
+      exact-hunter-postgres:
         condition: service_healthy
+
+  pg_admin:
+    container_name: pg_admin
+    image: dpage/pgadmin4
+    env_file:
+      - .env
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - 5050:80
+    networks:
+      - exactHunter
 
 networks:
   exactHunter:
@@ -43,3 +49,4 @@ networks:
 
 volumes:
   postgres_data:
+  pgadmin_data:
