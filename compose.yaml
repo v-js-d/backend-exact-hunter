@@ -31,15 +31,21 @@ services:
       exact-hunter-postgres:
         condition: service_healthy
 
-  pg_admin:
-    container_name: pg_admin
-    image: dpage/pgadmin4
+  prisma-studio:
+    container_name: exact-hunter-prisma-studio
+    build:
+      context: .
+      dockerfile: Dockerfile.prisma-studio
     env_file:
       - .env
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      # из контейнера Postgres доступен по имени сервиса, не localhost
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@exact-hunter-postgres:5432/${POSTGRES_DB:-postgres}
     ports:
-      - 5050:80
+      - 5555:5555
+    depends_on:
+      exact-hunter-postgres:
+        condition: service_healthy
     networks:
       - exactHunter
 
@@ -49,4 +55,3 @@ networks:
 
 volumes:
   postgres_data:
-  pgadmin_data:

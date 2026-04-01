@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN pnpm dlx prisma generate
 RUN pnpm build
 
 FROM node:20-alpine AS prod
