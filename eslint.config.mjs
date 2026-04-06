@@ -35,6 +35,19 @@ export default defineConfig(
 			'@typescript-eslint/no-explicit-any': 'error',
 			'@typescript-eslint/no-floating-promises': 'warn',
 			'@typescript-eslint/no-unsafe-argument': 'warn',
+			'@typescript-eslint/member-ordering': [
+				'error',
+				{
+					default: [
+						'static-field',
+						'instance-field',
+						'static-method',
+						'private-instance-method',
+						'protected-instance-method',
+						'public-instance-method',
+					],
+				},
+			],
 			'no-console': 'error',
 			eqeqeq: 'error',
 			'no-else-return': 'warn',
