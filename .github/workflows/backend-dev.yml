@@ -4,8 +4,43 @@ on:
   push:
     branches: [trunk]
 
+concurrency:
+  group: backend-dev-deploy
+  cancel-in-progress: false
+
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Lint
+        run: pnpm lint:ci
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test (no tests yet — passWithNoTests)
+        run: pnpm test:ci
+
   docker:
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,3 +74,26 @@ jobs:
             docker compose pull
             docker compose up -d
             docker image prune -f
+
+      - name: Smoke-check /health
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            retries=10
+            delay=3
+            for i in $(seq 1 $retries); do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/health || true)
+              if [ "$STATUS" = "200" ]; then
+                echo "Smoke-check passed (HTTP $STATUS) on attempt $i"
+                exit 0
+              fi
+              echo "Attempt $i/$retries — HTTP $STATUS, retrying in ${delay}s..."
+              sleep $delay
+            done
+            echo "Smoke-check failed after $retries attempts"
+            echo "--- Container logs (last 50 lines) ---"
+            docker logs exact-hunter-backend --tail 50
+            exit 1
