@@ -1,0 +1,23 @@
+model CandidateProfiles {
+  id String @id @default(uuid(4)) @db.Uuid
+
+  user_id String @unique @db.Uuid
+  user    Users  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  first_name    String?   @db.VarChar(100)
+  last_name     String?   @db.VarChar(100)
+  middle_name   String?   @db.VarChar(100)
+  birthday      DateTime? @db.Timestamptz()
+  phone         String?   @db.VarChar(20)
+  contact_email String?   @db.VarChar(255)
+  contact_phone String?   @db.VarChar(20)
+  avatar        String?   @db.VarChar(500)
+  bio           String?   @db.Text
+  location      String?   @db.VarChar(255)
+  created_at    DateTime  @default(now()) @db.Timestamptz()
+  updated_at    DateTime  @updatedAt @db.Timestamptz()
+
+  @@index([user_id])
+  @@map("candidate_profiles")
+  @@schema("profiles")
+}

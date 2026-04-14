@@ -1,0 +1,26 @@
+model Companies {
+  id   String  @id @default(uuid()) @db.Uuid
+  name String  @db.VarChar(255)
+  inn  String? @db.VarChar(20)
+
+  company_type_id String       @db.Uuid
+  company_type    CompanyTypes @relation(fields: [company_type_id], references: [id], onDelete: Restrict)
+
+  owner_id String @db.Uuid
+  owner    Users  @relation("CompanyOwner", fields: [owner_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now()) @db.Timestamptz()
+  updated_at DateTime @updatedAt @db.Timestamptz()
+
+  created_by      String? @db.Uuid
+  created_by_user Users?  @relation("CompanyCreatedBy", fields: [created_by], references: [id], onDelete: SetNull)
+
+  updated_by      String? @db.Uuid
+  updated_by_user Users?  @relation("CompanyUpdatedBy", fields: [updated_by], references: [id], onDelete: SetNull)
+
+  role_contexts RoleContexts[]
+
+  @@index([owner_id, inn, company_type_id, created_by, updated_by])
+  @@map("companies")
+  @@schema("companies")
+}
