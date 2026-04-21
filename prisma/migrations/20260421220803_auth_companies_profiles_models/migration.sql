@@ -13,7 +13,7 @@ CREATE TYPE "auth"."user_role" AS ENUM ('CANDIDATE', 'EMPLOYER', 'ADMIN');
 -- CreateTable
 CREATE TABLE "profiles"."candidate_profiles" (
     "id" UUID NOT NULL,
-    "user_id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
     "first_name" VARCHAR(100),
     "last_name" VARCHAR(100),
     "middle_name" VARCHAR(100),
@@ -87,16 +87,16 @@ CREATE TABLE "auth"."role_contexts" (
 -- CreateTable
 CREATE TABLE "auth"."tokens" (
     "id" UUID NOT NULL,
-    "user_id" UUID NOT NULL,
-    "role_context_id" UUID NOT NULL,
-    "refresh_token" VARCHAR(500) NOT NULL,
-    "device_id" VARCHAR(255) NOT NULL,
-    "device_name" VARCHAR(255),
-    "user_agent" TEXT,
-    "ip_address" VARCHAR(45),
-    "expires_at" TIMESTAMP(6) NOT NULL,
-    "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(6) NOT NULL,
+    "userId" UUID NOT NULL,
+    "roleContextId" UUID NOT NULL,
+    "refreshToken" VARCHAR(500) NOT NULL,
+    "deviceId" VARCHAR(255) NOT NULL,
+    "deviceName" VARCHAR(255),
+    "userAgent" TEXT,
+    "ipAddress" VARCHAR(45),
+    "expiresAt" TIMESTAMP(6) NOT NULL,
+    "createdAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(6) NOT NULL,
 
     CONSTRAINT "tokens_pkey" PRIMARY KEY ("id")
 );
@@ -106,24 +106,36 @@ CREATE TABLE "auth"."users" (
     "id" UUID NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255) NOT NULL,
-    "is_activated" BOOLEAN NOT NULL DEFAULT false,
-    "activation_link" VARCHAR(255),
-    "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(6) NOT NULL,
-    "created_by" UUID,
-    "updated_by" UUID,
+    "isActivated" BOOLEAN NOT NULL DEFAULT false,
+    "activationLink" VARCHAR(255),
+    "createdAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(6) NOT NULL,
+    "createdBy" UUID,
+    "updatedBy" UUID,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "candidate_profiles_user_id_key" ON "profiles"."candidate_profiles"("user_id");
+CREATE UNIQUE INDEX "candidate_profiles_userId_key" ON "profiles"."candidate_profiles"("userId");
 
 -- CreateIndex
-CREATE INDEX "candidate_profiles_user_id_idx" ON "profiles"."candidate_profiles"("user_id");
+CREATE INDEX "candidate_profiles_userId_idx" ON "profiles"."candidate_profiles"("userId");
 
 -- CreateIndex
-CREATE INDEX "companies_owner_id_inn_company_type_id_created_by_updated_b_idx" ON "companies"."companies"("owner_id", "inn", "company_type_id", "created_by", "updated_by");
+CREATE INDEX "companies_created_by_idx" ON "companies"."companies"("created_by");
+
+-- CreateIndex
+CREATE INDEX "companies_owner_id_idx" ON "companies"."companies"("owner_id");
+
+-- CreateIndex
+CREATE INDEX "companies_inn_idx" ON "companies"."companies"("inn");
+
+-- CreateIndex
+CREATE INDEX "companies_company_type_id_idx" ON "companies"."companies"("company_type_id");
+
+-- CreateIndex
+CREATE INDEX "companies_updated_by_idx" ON "companies"."companies"("updated_by");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "company_types_name_key" ON "companies"."company_types"("name");
@@ -132,7 +144,10 @@ CREATE UNIQUE INDEX "company_types_name_key" ON "companies"."company_types"("nam
 CREATE UNIQUE INDEX "company_types_slug_key" ON "companies"."company_types"("slug");
 
 -- CreateIndex
-CREATE INDEX "company_types_name_slug_idx" ON "companies"."company_types"("name", "slug");
+CREATE INDEX "company_types_slug_idx" ON "companies"."company_types"("slug");
+
+-- CreateIndex
+CREATE INDEX "company_types_name_idx" ON "companies"."company_types"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "hr_roles_name_key" ON "auth"."hr_roles"("name");
@@ -141,43 +156,55 @@ CREATE UNIQUE INDEX "hr_roles_name_key" ON "auth"."hr_roles"("name");
 CREATE UNIQUE INDEX "hr_roles_slug_key" ON "auth"."hr_roles"("slug");
 
 -- CreateIndex
-CREATE INDEX "hr_roles_name_slug_is_active_idx" ON "auth"."hr_roles"("name", "slug", "is_active");
+CREATE INDEX "hr_roles_name_idx" ON "auth"."hr_roles"("name");
 
 -- CreateIndex
-CREATE INDEX "role_contexts_user_id_user_role_company_id_hr_role_id_idx" ON "auth"."role_contexts"("user_id", "user_role", "company_id", "hr_role_id");
+CREATE INDEX "hr_roles_slug_idx" ON "auth"."hr_roles"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tokens_refresh_token_key" ON "auth"."tokens"("refresh_token");
+CREATE INDEX "role_contexts_user_id_idx" ON "auth"."role_contexts"("user_id");
 
 -- CreateIndex
-CREATE INDEX "tokens_user_id_idx" ON "auth"."tokens"("user_id");
+CREATE INDEX "role_contexts_company_id_idx" ON "auth"."role_contexts"("company_id");
 
 -- CreateIndex
-CREATE INDEX "tokens_role_context_id_idx" ON "auth"."tokens"("role_context_id");
+CREATE INDEX "role_contexts_hr_role_id_idx" ON "auth"."role_contexts"("hr_role_id");
 
 -- CreateIndex
-CREATE INDEX "tokens_refresh_token_idx" ON "auth"."tokens"("refresh_token");
+CREATE UNIQUE INDEX "tokens_refreshToken_key" ON "auth"."tokens"("refreshToken");
 
 -- CreateIndex
-CREATE INDEX "tokens_device_id_idx" ON "auth"."tokens"("device_id");
+CREATE INDEX "tokens_userId_idx" ON "auth"."tokens"("userId");
 
 -- CreateIndex
-CREATE INDEX "tokens_expires_at_idx" ON "auth"."tokens"("expires_at");
+CREATE INDEX "tokens_roleContextId_idx" ON "auth"."tokens"("roleContextId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tokens_user_id_role_context_id_device_id_key" ON "auth"."tokens"("user_id", "role_context_id", "device_id");
+CREATE INDEX "tokens_deviceId_idx" ON "auth"."tokens"("deviceId");
+
+-- CreateIndex
+CREATE INDEX "tokens_expiresAt_idx" ON "auth"."tokens"("expiresAt");
+
+-- CreateIndex
+CREATE INDEX "tokens_userId_roleContextId_deviceId_idx" ON "auth"."tokens"("userId", "roleContextId", "deviceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "auth"."users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_activation_link_key" ON "auth"."users"("activation_link");
+CREATE UNIQUE INDEX "users_activationLink_key" ON "auth"."users"("activationLink");
 
 -- CreateIndex
-CREATE INDEX "users_email_created_by_updated_by_idx" ON "auth"."users"("email", "created_by", "updated_by");
+CREATE INDEX "users_email_idx" ON "auth"."users"("email");
+
+-- CreateIndex
+CREATE INDEX "users_createdBy_idx" ON "auth"."users"("createdBy");
+
+-- CreateIndex
+CREATE INDEX "users_updatedBy_idx" ON "auth"."users"("updatedBy");
 
 -- AddForeignKey
-ALTER TABLE "profiles"."candidate_profiles" ADD CONSTRAINT "candidate_profiles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "profiles"."candidate_profiles" ADD CONSTRAINT "candidate_profiles_userId_fkey" FOREIGN KEY ("userId") REFERENCES "auth"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "companies"."companies" ADD CONSTRAINT "companies_company_type_id_fkey" FOREIGN KEY ("company_type_id") REFERENCES "companies"."company_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -201,13 +228,13 @@ ALTER TABLE "auth"."role_contexts" ADD CONSTRAINT "role_contexts_company_id_fkey
 ALTER TABLE "auth"."role_contexts" ADD CONSTRAINT "role_contexts_hr_role_id_fkey" FOREIGN KEY ("hr_role_id") REFERENCES "auth"."hr_roles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "auth"."tokens" ADD CONSTRAINT "tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "auth"."tokens" ADD CONSTRAINT "tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "auth"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "auth"."tokens" ADD CONSTRAINT "tokens_role_context_id_fkey" FOREIGN KEY ("role_context_id") REFERENCES "auth"."role_contexts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "auth"."tokens" ADD CONSTRAINT "tokens_roleContextId_fkey" FOREIGN KEY ("roleContextId") REFERENCES "auth"."role_contexts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "auth"."users" ADD CONSTRAINT "users_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "auth"."users" ADD CONSTRAINT "users_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "auth"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "auth"."users" ADD CONSTRAINT "users_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "auth"."users" ADD CONSTRAINT "users_updatedBy_fkey" FOREIGN KEY ("updatedBy") REFERENCES "auth"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

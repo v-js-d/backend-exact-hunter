@@ -1,29 +1,31 @@
 model Users {
-  id              String   @id @default(uuid()) @db.Uuid
-  email           String   @unique @db.VarChar(255)
-  password        String   @db.VarChar(255)
-  is_activated    Boolean  @default(false)
-  activation_link String?  @unique @db.VarChar(255)
-  created_at      DateTime @default(now()) @db.Timestamp(6)
-  updated_at      DateTime @updatedAt @db.Timestamp(6)
+  id             String   @id @default(uuid()) @db.Uuid
+  email          String   @unique @db.VarChar(255)
+  password       String   @db.VarChar(255)
+  isActivated    Boolean  @default(false)
+  activationLink String?  @unique @db.VarChar(255)
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime @updatedAt @db.Timestamp(6)
 
-  created_by      String? @db.Uuid
-  created_by_user Users?  @relation("UsersCreatedBy", fields: [created_by], references: [id], onDelete: SetNull)
+  createdBy     String? @db.Uuid
+  createdByUser Users?  @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
 
-  updated_by      String? @db.Uuid
-  updated_by_user Users?  @relation("UsersUpdatedBy", fields: [updated_by], references: [id], onDelete: SetNull)
+  updatedBy     String? @db.Uuid
+  updatedByUser Users?  @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
 
-  created_users Users[] @relation("UsersCreatedBy")
-  updated_users Users[] @relation("UsersUpdatedBy")
+  createdUsers Users[] @relation("UsersCreatedBy")
+  updatedUsers Users[] @relation("UsersUpdatedBy")
 
-  role_contexts     RoleContexts[]
-  tokens            Tokens[]
-  candidate_profile CandidateProfiles?
-  owned_companies   Companies[]        @relation("CompanyOwner")
-  created_companies Companies[]        @relation("CompanyCreatedBy")
-  updated_companies Companies[]        @relation("CompanyUpdatedBy")
+  roleContexts     RoleContext[]
+  tokens           Token[]
+  candidateProfile CandidateProfile?
+  ownedCompanies   Company[]         @relation("CompanyOwner")
+  createdCompanies Company[]         @relation("CompanyCreatedBy")
+  updatedCompanies Company[]         @relation("CompanyUpdatedBy")
 
-  @@index([email, created_by, updated_by])
+  @@index([email])
+  @@index([createdBy])
+  @@index([updatedBy])
   @@map("users")
   @@schema("auth")
 }

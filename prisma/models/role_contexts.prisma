@@ -7,23 +7,26 @@ enum UserRole {
   @@schema("auth")
 }
 
-model RoleContexts {
+model RoleContext {
   id String @id @default(uuid()) @db.Uuid
 
-  user_id String @db.Uuid
-  user    Users  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  userId String @map("user_id") @db.Uuid
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user_role  UserRole
-  company_id String?    @db.Uuid
-  company    Companies? @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  userRole UserRole @map("user_role")
 
-  hr_role_id String?  @db.Uuid
-  hr_role    HrRoles? @relation(fields: [hr_role_id], references: [id], onDelete: SetNull)
+  companyId String?  @map("company_id") @db.Uuid
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  created_at DateTime @default(now()) @db.Timestamp(6)
-  tokens     Tokens[]
+  hrRoleId String? @map("hr_role_id") @db.Uuid
+  hrRole   HrRole? @relation(fields: [hrRoleId], references: [id], onDelete: SetNull)
 
-  @@index([user_id, user_role, company_id, hr_role_id])
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  tokens    Token[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([hrRoleId])
   @@map("role_contexts")
   @@schema("auth")
 }

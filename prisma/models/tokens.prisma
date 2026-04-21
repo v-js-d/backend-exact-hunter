@@ -1,24 +1,26 @@
-model Tokens {
-  id              String       @id @default(uuid()) @db.Uuid
-  user_id         String       @db.Uuid
-  role_context_id String       @db.Uuid
-  refresh_token   String       @unique @db.VarChar(500)
-  device_id       String       @db.VarChar(255)
-  device_name     String?      @db.VarChar(255)
-  user_agent      String?      @db.Text
-  ip_address      String?      @db.VarChar(45)
-  expires_at      DateTime     @db.Timestamp(6)
-  created_at      DateTime     @default(now()) @db.Timestamp(6)
-  updated_at      DateTime     @updatedAt @db.Timestamp(6)
-  user            Users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  role_context    RoleContexts @relation(fields: [role_context_id], references: [id], onDelete: Cascade)
+model Token {
+  id String @id @default(uuid()) @db.Uuid
 
-  @@index([user_id])
-  @@index([role_context_id])
-  @@index([refresh_token])
-  @@index([device_id])
-  @@index([expires_at])
-  @@unique([user_id, role_context_id, device_id])
+  userId String @db.Uuid
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roleContextId String      @db.Uuid
+  roleContext   RoleContext @relation(fields: [roleContextId], references: [id], onDelete: Cascade)
+
+  refreshToken String   @unique @db.VarChar(500)
+  deviceId     String   @db.VarChar(255)
+  deviceName   String?  @db.VarChar(255)
+  userAgent    String?  @db.Text
+  ipAddress    String?  @db.VarChar(45)
+  expiresAt    DateTime @db.Timestamp(6)
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([userId])
+  @@index([roleContextId])
+  @@index([deviceId])
+  @@index([expiresAt])
+  @@index([userId, roleContextId, deviceId])
   @@map("tokens")
   @@schema("auth")
 }
