@@ -1,0 +1,16 @@
+model HrRole {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @unique @db.VarChar(50)
+  slug         String        @unique @db.VarChar(50)
+  description  String?       @db.Text
+  permissions  Json?
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  roleContexts RoleContext[]
+
+  @@index([name])
+  @@index([slug])
+  @@map("hr_roles")
+  @@schema("auth")
+}

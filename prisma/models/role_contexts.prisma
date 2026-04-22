@@ -1,0 +1,32 @@
+enum UserRole {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+
+  @@map("user_role")
+  @@schema("auth")
+}
+
+model RoleContext {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  userRole UserRole @map("user_role")
+
+  companyId String?  @map("company_id") @db.Uuid
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  hrRoleId String? @map("hr_role_id") @db.Uuid
+  hrRole   HrRole? @relation(fields: [hrRoleId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  tokens    Token[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([hrRoleId])
+  @@map("role_contexts")
+  @@schema("auth")
+}

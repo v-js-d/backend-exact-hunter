@@ -1,0 +1,31 @@
+model Users {
+  id             String   @id @default(uuid()) @db.Uuid
+  email          String   @unique @db.VarChar(255)
+  password       String   @db.VarChar(255)
+  isActivated    Boolean  @default(false)
+  activationLink String?  @unique @db.VarChar(255)
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime @updatedAt @db.Timestamp(6)
+
+  createdBy     String? @db.Uuid
+  createdByUser Users?  @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  updatedBy     String? @db.Uuid
+  updatedByUser Users?  @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  createdUsers Users[] @relation("UsersCreatedBy")
+  updatedUsers Users[] @relation("UsersUpdatedBy")
+
+  roleContexts     RoleContext[]
+  tokens           Token[]
+  candidateProfile CandidateProfile?
+  ownedCompanies   Company[]         @relation("CompanyOwner")
+  createdCompanies Company[]         @relation("CompanyCreatedBy")
+  updatedCompanies Company[]         @relation("CompanyUpdatedBy")
+
+  @@index([email])
+  @@index([createdBy])
+  @@index([updatedBy])
+  @@map("users")
+  @@schema("auth")
+}

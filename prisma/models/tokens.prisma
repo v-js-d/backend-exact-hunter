@@ -1,0 +1,26 @@
+model Token {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId String @db.Uuid
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roleContextId String      @db.Uuid
+  roleContext   RoleContext @relation(fields: [roleContextId], references: [id], onDelete: Cascade)
+
+  refreshToken String   @unique @db.VarChar(500)
+  deviceId     String   @db.VarChar(255)
+  deviceName   String?  @db.VarChar(255)
+  userAgent    String?  @db.Text
+  ipAddress    String?  @db.VarChar(45)
+  expiresAt    DateTime @db.Timestamp(6)
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([userId])
+  @@index([roleContextId])
+  @@index([deviceId])
+  @@index([expiresAt])
+  @@index([userId, roleContextId, deviceId])
+  @@map("tokens")
+  @@schema("auth")
+}
