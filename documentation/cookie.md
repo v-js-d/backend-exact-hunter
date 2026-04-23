@@ -21,19 +21,20 @@
 - Обязательный контракт очистки реализован в `AuthController`:
   - `POST /auth/refresh` при `401` обязательно вызывает `clearAuthCookies(...)`
   - `POST /auth/logout` всегда очищает обе cookies (и при успехе, и при невалидной сессии)
+- Одновременная работа в двух ролях через разные cookie имена **отменена**.
+  Теперь используется один стандартный набор cookie для текущей сессии:
+  - `access_token`
+  - `refresh_token`
 
 ## Соответствие API (текущее)
 
-Нужный API покрыт следующими методами:
+Текущий API сервиса:
 
-- Эквивалент `setAccessToken(...)` + `setRefreshToken(...)`:
-  - `AuthCookieService.setAuthCookies(response, scope, payload)`
-- Эквивалент `getRefreshToken(req)`:
-  - `AuthCookieService.getRefreshTokenFromRequestCookies(req.cookies, scope)`
-- `clearAuthCookies(res)`:
-  - `AuthCookieService.clearAuthCookies(response, scope)`
-
-`getAccessToken(req)` пока не используется в текущем потоке и может быть добавлен, когда появится сценарий чтения access-cookie из запроса.
+- `setAccessToken(response, accessToken)`
+- `setRefreshToken(response, refreshToken)`
+- `getAccessToken(request) -> string | undefined`
+- `getRefreshToken(request) -> string | undefined`
+- `clearAuthCookies(response)`
 
 ## Поведение cookies
 
@@ -45,32 +46,24 @@
 - `path`: `/`
 - `domain`: опционально через `AUTH_COOKIE_DOMAIN` (пусто -> атрибут не выставляется)
 
-## Имена cookies и scope
+## Имена cookies
 
-Сейчас используются role-specific имена, чтобы в одном браузере можно было жить в двух ролях параллельно:
+Используются единые auth-cookie:
 
-- Candidate:
-  - `candidate_access_token`
-  - `candidate_refresh_token`
-- Employer:
-  - `employer_access_token`
-  - `employer_refresh_token`
+- `access_token`
+- `refresh_token`
 
-Имена настраиваются через env:
+Имена можно переопределить через env:
 
-- `CANDIDATE_ACCESS_COOKIE_NAME`
-- `CANDIDATE_REFRESH_COOKIE_NAME`
-- `EMPLOYER_ACCESS_COOKIE_NAME`
-- `EMPLOYER_REFRESH_COOKIE_NAME`
+- `ACCESS_COOKIE_NAME`
+- `REFRESH_COOKIE_NAME`
 
 ## Переменные окружения
 
 - `AUTH_COOKIE_DOMAIN`
 - `AUTH_COOKIE_SECURE`
-- `CANDIDATE_ACCESS_COOKIE_NAME`
-- `CANDIDATE_REFRESH_COOKIE_NAME`
-- `EMPLOYER_ACCESS_COOKIE_NAME`
-- `EMPLOYER_REFRESH_COOKIE_NAME`
+- `ACCESS_COOKIE_NAME`
+- `REFRESH_COOKIE_NAME`
 - `COOKIE_SECRET` (используется в `cookie-parser`)
 - `JWT_ACCESS_EXPIRES_IN`
 - `REFRESH_TOKEN_EXPIRES_IN`
@@ -90,7 +83,7 @@
 
 1. Login: `POST /auth/login`
    - в body передаются `userId`, `roleContextId`, `userRole`
-   - сервер ставит две HttpOnly cookies
+   - сервер ставит `access_token` и `refresh_token` (HttpOnly)
 2. Refresh: `POST /auth/refresh`
    - сервер читает refresh-cookie, валидирует/ротирует пару токенов, обновляет cookies
 3. Logout: `POST /auth/logout`

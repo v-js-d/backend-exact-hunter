@@ -1,30 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
-import { UserRole } from 'generated/prisma/enums';
+import { Request, Response } from 'express';
 
 import { ConfigCookieService } from './config-cookie.service';
-import { AuthTokenPair } from '@/common/auth';
 
 @Injectable()
 export class AuthCookieService {
 	constructor(private readonly configCookieService: ConfigCookieService) {}
 
-	getRefreshTokenFromRequestCookies(cookies: Record<string, unknown>, scope: UserRole): string | null {
-		const cookieName = this.configCookieService.getCookieNames(scope).refresh;
-		const value = cookies[cookieName];
-		return typeof value === 'string' && value.length > 0 ? value : null;
+	setAccessToken(response: Response, accessToken: string): void {
+		const { access } = this.configCookieService.getCookieNames();
+		const { access: accessOptions } = this.configCookieService.getCookieConfig();
+		response.cookie(access, accessToken, accessOptions);
 	}
 
-	setAuthCookies(response: Response, scope: UserRole, payload: AuthTokenPair): void {
-		const names = this.configCookieService.getCookieNames(scope);
-		const { access, refresh } = this.configCookieService.getCookieConfig(scope);
-		response.cookie(names.access, payload.accessToken, access);
-		response.cookie(names.refresh, payload.refreshToken, refresh);
+	setRefreshToken(response: Response, refreshToken: string): void {
+		const { refresh } = this.configCookieService.getCookieNames();
+		const { refresh: refreshOptions } = this.configCookieService.getCookieConfig();
+		response.cookie(refresh, refreshToken, refreshOptions);
 	}
 
-	clearAuthCookies(response: Response, scope: UserRole): void {
-		const names = this.configCookieService.getCookieNames(scope);
-		const clearOptions = this.configCookieService.getClearCookieOptions(scope);
+	getAccessToken(request: Request): string | undefined {
+		const { access } = this.configCookieService.getCookieNames();
+		const cookies = (request.cookies ?? {}) as Record<string, unknown>;
+		const raw = cookies[access];
+		return typeof raw === 'string' && raw.length > 0 ? raw : undefined;
+	}
+
+	getRefreshToken(request: Request): string | undefined {
+		const { refresh } = this.configCookieService.getCookieNames();
+		const cookies = (request.cookies ?? {}) as Record<string, unknown>;
+		const raw = cookies[refresh];
+		return typeof raw === 'string' && raw.length > 0 ? raw : undefined;
+	}
+
+	clearAuthCookies(response: Response): void {
+		const names = this.configCookieService.getCookieNames();
+		const clearOptions = this.configCookieService.getClearCookieOptions();
 		response.clearCookie(names.access, clearOptions);
 		response.clearCookie(names.refresh, clearOptions);
 	}

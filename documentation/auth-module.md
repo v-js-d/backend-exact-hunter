@@ -18,8 +18,9 @@
 
 - `controllers/auth.controller.ts`
 - `services/auth.service.ts`
-- `dto/auth-session.dto.ts`
-- `dto/auth-session-response.dto.ts`
+- `dto/auth-session.request.dto.ts`
+- `dto/auth-session.response.dto.ts`
+- `dto/auth-logout.response.dto.ts`
 - `auth.module.ts`
 - `index.ts`
 
@@ -67,7 +68,7 @@
 
 - Нет полноценного credential flow (это тестовый session API).
 - Пока нет отдельного публичного `getAccessToken(req)` сценария.
-- Имена cookies role-specific (candidate/employer), чтобы можно было параллельно сидеть в двух ролях в одном браузере.
+- Используется один набор auth-cookie (`access_token`, `refresh_token`), одновременная работа в двух ролях в одном браузере не поддерживается в текущем контракте.
 - Роль `ADMIN` осознанно исключена из cookie-auth потока на данном этапе.
 
 ## Зачем модуль добавлен сейчас

@@ -24,7 +24,8 @@ export class AuthController {
 		@Res({ passthrough: true }) response: Response,
 	): Promise<AuthSessionResponseDto> {
 		const pair = await this.authService.login(dto, request);
-		this.cookieService.setAuthCookies(response, dto.userRole, pair);
+		this.cookieService.setAccessToken(response, pair.accessToken);
+		this.cookieService.setRefreshToken(response, pair.refreshToken);
 		return dto;
 	}
 
@@ -36,20 +37,21 @@ export class AuthController {
 		@Req() request: Request,
 		@Res({ passthrough: true }) response: Response,
 	): Promise<AuthSessionResponseDto> {
-		const refreshToken = this.cookieService.getRefreshTokenFromRequestCookies(request.cookies ?? {}, dto.userRole);
+		const refreshToken = this.cookieService.getRefreshToken(request);
 		if (!refreshToken) {
-			this.cookieService.clearAuthCookies(response, dto.userRole);
+			this.cookieService.clearAuthCookies(response);
 			throw new UnauthorizedException(EnumCookieError.REFRESH_COOKIE_MISSING);
 		}
 
 		try {
 			const pair = await this.authService.refresh(dto, refreshToken, request);
-			this.cookieService.setAuthCookies(response, dto.userRole, pair);
+			this.cookieService.setAccessToken(response, pair.accessToken);
+			this.cookieService.setRefreshToken(response, pair.refreshToken);
 			return dto;
 		} catch (error) {
 			if (error instanceof UnauthorizedException) {
 				// Mandatory contract: refresh 401 always clears auth cookies.
-				this.cookieService.clearAuthCookies(response, dto.userRole);
+				this.cookieService.clearAuthCookies(response);
 			}
 			throw error;
 		}
@@ -68,7 +70,7 @@ export class AuthController {
 			await this.authService.logout(dto, request);
 		} finally {
 			// Mandatory contract: logout always clears both auth cookies.
-			this.cookieService.clearAuthCookies(response, dto.userRole);
+			this.cookieService.clearAuthCookies(response);
 		}
 		return { ok: true };
 	}
