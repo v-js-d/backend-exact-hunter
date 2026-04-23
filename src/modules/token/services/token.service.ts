@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import ms, { StringValue } from 'ms';
-import { AccessTokenPayload, RequestMeta, TokenPair } from '../types/token.type';
+import { AccessTokenPayload, AuthTokenPair, RequestMeta } from '../types/token.type';
 import { TokenRepository } from '../repositories/token.repository';
 import { BCRYPT_SALT_ROUNDS, EnumTokenConfig, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
 
@@ -43,8 +43,8 @@ export class TokenService {
 		return bcrypt.compare(plain, hash);
 	}
 
-	async saveToken(userId: string, roleContextId: string, refreshTokenPlain: string, meta: RequestMeta): Promise<void> {
-		const refreshTokenHash = await this.hashRefreshToken(refreshTokenPlain);
+	async saveToken(userId: string, roleContextId: string, refreshToken: string, meta: RequestMeta): Promise<void> {
+		const refreshTokenHash = await this.hashRefreshToken(refreshToken);
 		const expiresAt = this.calculateRefreshExpiry();
 
 		await this.tokenRepository.save({
@@ -59,13 +59,13 @@ export class TokenService {
 		});
 	}
 
-	async generateTokenPair(payload: AccessTokenPayload, meta: RequestMeta): Promise<TokenPair> {
+	async generateTokenPair(payload: AccessTokenPayload, meta: RequestMeta): Promise<AuthTokenPair> {
 		const accessToken = this.generateAccessToken(payload);
-		const refreshTokenPlain = this.generateRefreshToken();
+		const refreshToken = this.generateRefreshToken();
 
-		await this.saveToken(payload.sub, payload.roleContextId, refreshTokenPlain, meta);
+		await this.saveToken(payload.sub, payload.roleContextId, refreshToken, meta);
 
-		return { accessToken, refreshTokenPlain };
+		return { accessToken, refreshToken };
 	}
 
 	async validateAccessToken(accessToken: string): Promise<AccessTokenPayload> {
@@ -85,7 +85,7 @@ export class TokenService {
 	}
 
 	async validateRefreshToken(
-		refreshTokenPlain: string,
+		refreshToken: string,
 		userId: string,
 		roleContextId: string,
 		deviceId: string,
@@ -101,14 +101,14 @@ export class TokenService {
 			throw new UnauthorizedException(EnumTokenError.REFRESH_TOKEN_EXPIRED);
 		}
 
-		const isValid = await this.compareRefreshToken(refreshTokenPlain, tokenRecord.refreshToken);
+		const isValid = await this.compareRefreshToken(refreshToken, tokenRecord.refreshToken);
 		if (!isValid) {
 			await this.tokenRepository.deleteById(tokenRecord.id);
 			throw new UnauthorizedException(EnumTokenError.REFRESH_TOKEN_INVALID);
 		}
 	}
 
-	async rotateRefreshToken(payload: AccessTokenPayload, meta: RequestMeta): Promise<TokenPair> {
+	async rotateRefreshToken(payload: AccessTokenPayload, meta: RequestMeta): Promise<AuthTokenPair> {
 		const existing = await this.tokenRepository.findByUserAndDevice(payload.sub, payload.roleContextId, meta.deviceId);
 
 		if (existing) {

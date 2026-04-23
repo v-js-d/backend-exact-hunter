@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 import { getCorsConfig, getSwaggerConfig, getValidationConfig } from '@core/config';
 import { GlobalExceptionFilter, ResponseInterceptor } from '@core/response';
 import { AppModule } from '@/app.module';
@@ -10,6 +11,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	const configService = app.get(ConfigService);
+	app.use(cookieParser(configService.get<string>('COOKIE_SECRET') || undefined));
 	getCorsConfig(app, configService);
 	getSwaggerConfig(app);
 	getValidationConfig(app);

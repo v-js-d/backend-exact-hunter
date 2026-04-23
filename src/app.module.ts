@@ -4,8 +4,10 @@ import * as Joi from 'joi';
 import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
 import { PrismaModule } from './prisma';
 import { HealthModule } from '@/modules/health/health.module';
+import { AuthModule } from '@/modules/auth';
 import { SmokeModule } from '@/modules/smoke';
 import { TokenModule } from '@/modules/token';
+import { CookieModule } from '@/common/cookie';
 
 @Module({
 	imports: [
@@ -20,7 +22,9 @@ import { TokenModule } from '@/modules/token';
 		}),
 		HealthModule,
 		SmokeModule,
+		AuthModule,
 		PrismaModule,
+		CookieModule,
 		TokenModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
