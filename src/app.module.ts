@@ -4,7 +4,8 @@ import * as Joi from 'joi';
 import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
 import { PrismaModule } from './prisma';
 import { HealthModule } from '@/modules/health/health.module';
-import { SmokeModule } from '@/modules/smoke/';
+import { SmokeModule } from '@/modules/smoke';
+import { TokenModule } from '@/modules/token';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { SmokeModule } from '@/modules/smoke/';
 		HealthModule,
 		SmokeModule,
 		PrismaModule,
+		TokenModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })
