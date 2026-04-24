@@ -5,6 +5,7 @@ import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/respon
 import { PrismaModule } from './prisma';
 import { HealthModule } from '@/modules/health/health.module';
 import { SmokeModule } from '@/modules/smoke/';
+import { MockModule } from '@/modules/mock';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { SmokeModule } from '@/modules/smoke/';
 		}),
 		HealthModule,
 		SmokeModule,
+		MockModule,
 		PrismaModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
