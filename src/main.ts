@@ -17,9 +17,8 @@ async function bootstrap() {
 	getValidationConfig(app);
 	app.useGlobalFilters(app.get(GlobalExceptionFilter));
 	app.useGlobalInterceptors(new ResponseInterceptor());
-	const port = configService.get<number>('PORT');
-
-	await app.listen(port ?? DEFAULT_PORT);
+	const port = configService.get<number>('PORT') ?? DEFAULT_PORT;
+	await app.listen(port, '0.0.0.0');
 }
 
 bootstrap().catch((err) => {
