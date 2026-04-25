@@ -6,6 +6,10 @@ import { PrismaModule } from './prisma';
 import { HealthModule } from '@/modules/health/health.module';
 import { SmokeModule } from '@/modules/smoke/';
 import { MockModule } from '@/modules/mock';
+import { AuthModule } from '@/modules/auth';
+import { SmokeModule } from '@/modules/smoke';
+import { TokenModule } from '@/modules/token';
+import { CookieModule } from '@/common/cookie';
 
 @Module({
 	imports: [
@@ -21,7 +25,10 @@ import { MockModule } from '@/modules/mock';
 		HealthModule,
 		SmokeModule,
 		MockModule,
+		AuthModule,
 		PrismaModule,
+		CookieModule,
+		TokenModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })
