@@ -4,7 +4,6 @@ import * as Joi from 'joi';
 import { GlobalExceptionFilter, GlobalExceptionFilterLogger } from '@core/response';
 import { PrismaModule } from './prisma';
 import { HealthModule } from '@/modules/health/health.module';
-import { SmokeModule } from '@/modules/smoke/';
 import { MockModule } from '@/modules/mock';
 import { AuthModule } from '@/modules/auth';
 import { SmokeModule } from '@/modules/smoke';
