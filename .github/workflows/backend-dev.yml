@@ -1,5 +1,10 @@
 name: Backend (dev) - build, push, deploy
 
+# До 2026-09-16 Node 20 в раннерах GitHub Actions: см. opt-in / обновления actions
+# https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 on:
   push:
     branches: [trunk]
@@ -18,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
@@ -82,18 +87,21 @@ jobs:
           username: ${{ secrets.DEV_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
+            # Проверка внутри контейнера: на VPS curl к localhost:3001 часто даёт 000, если
+            # порт не опубликован на host (другой compose/override) — при этом сервис внутри сети контейнера жив.
             retries=10
             delay=3
             for i in $(seq 1 $retries); do
-              STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3001/health || true)
-              if [ "$STATUS" = "200" ]; then
-                echo "Smoke-check passed (HTTP $STATUS) on attempt $i"
+              if docker exec exact-hunter-backend node -e "require('http').get('http://127.0.0.1:3001/health',(r)=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))" 2>/dev/null; then
+                echo "Smoke-check passed (in-container /health) on attempt $i"
                 exit 0
               fi
-              echo "Attempt $i/$retries — HTTP $STATUS, retrying in ${delay}s..."
+              echo "Attempt $i/$retries — in-container check failed, retrying in ${delay}s..."
               sleep $delay
             done
             echo "Smoke-check failed after $retries attempts"
+            echo "--- docker port exact-hunter-backend ---"
+            docker port exact-hunter-backend 2>&1 || true
             echo "--- Container logs (last 50 lines) ---"
             docker logs exact-hunter-backend --tail 50
             exit 1
