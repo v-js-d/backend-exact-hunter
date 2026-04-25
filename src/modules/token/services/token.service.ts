@@ -7,6 +7,7 @@ import ms, { StringValue } from 'ms';
 import { AccessTokenPayload, AuthTokenPair, RequestMeta } from '../types/token.type';
 import { TokenRepository } from '../repositories/token.repository';
 import { BCRYPT_SALT_ROUNDS, EnumTokenConfig, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
+import { getExpiresInFromConfig, getSecretFromConfig, getTtlFromConfig } from '../utils/get-token-configs.utils';
 
 @Injectable()
 export class TokenService {
@@ -17,13 +18,13 @@ export class TokenService {
 	) {}
 
 	private calculateRefreshExpiry(): Date {
-		const ttl = this.configService.getOrThrow<string>(EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN);
+		const ttl = getTtlFromConfig(this.configService);
 		return new Date(Date.now() + ms(ttl as StringValue));
 	}
 
 	generateAccessToken(payload: AccessTokenPayload): string {
-		const secret = this.configService.getOrThrow<string>(EnumTokenConfig.JWT_SECRET);
-		const expiresIn = this.configService.getOrThrow<string>(EnumTokenConfig.JWT_ACCESS_EXPIRES_IN);
+		const secret = getSecretFromConfig(this.configService);
+		const expiresIn = getExpiresInFromConfig(this.configService);
 
 		return this.jwtService.sign(
 			{ ...payload },
