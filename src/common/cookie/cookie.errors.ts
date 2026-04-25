@@ -1,0 +1,3 @@
+export enum EnumCookieError {
+	REFRESH_COOKIE_MISSING = 'REFRESH_COOKIE_MISSING',
+}

@@ -58,7 +58,7 @@ Repository подключен через DI-абстракцию: `TokenReposito
 2. Проверить `expiresAt` и bcrypt compare
 3. Удалить старую запись
 4. Создать новую запись с новым hash и новым expiresAt
-5. Вернуть новую пару `{ accessToken, refreshTokenPlain }`
+5. Вернуть новую пару `{ accessToken, refreshToken }` (`AuthTokenPair`)
 
 ### Logout
 
@@ -73,7 +73,7 @@ Repository подключен через DI-абстракцию: `TokenReposito
 | `generateRefreshToken()`                                       | Криптостойкая случайная строка (32 bytes → hex)               |
 | `hashRefreshToken(plain)`                                      | bcrypt hash для сохранения в БД                               |
 | `compareRefreshToken(plain, hash)`                             | bcrypt compare для валидации                                  |
-| `saveToken(userId, roleContextId, refreshPlain, meta)`         | Хэширует refresh и сохраняет запись в БД                      |
+| `saveToken(userId, roleContextId, refreshToken, meta)`         | Хэширует refresh и сохраняет запись в БД                      |
 | `generateTokenPair(payload, meta)`                             | Генерирует access + refresh, сохраняет в БД, возвращает пару  |
 | `validateAccessToken(accessToken)`                             | Верифицирует JWT, возвращает payload или бросает 401          |
 | `validateRefreshToken(plain, userId, roleContextId, deviceId)` | Проверяет expiresAt + hash, бросает 401 при невалидности      |
@@ -82,6 +82,8 @@ Repository подключен через DI-абстракцию: `TokenReposito
 | `removeAllUserTokens(userId)`                                  | Удаляет все refresh-сессии пользователя                       |
 
 ## Типы
+
+`AuthTokenPair` объявлен в `src/common/auth/token.type.ts` и реэкспортируется из `token/types/token.type.ts`.
 
 ```typescript
 interface AccessTokenPayload {
@@ -92,9 +94,9 @@ interface AccessTokenPayload {
 	hrRoleName?: string; // для EMPLOYER
 }
 
-interface TokenPair {
+interface AuthTokenPair {
 	accessToken: string;
-	refreshTokenPlain: string;
+	refreshToken: string;
 }
 
 interface RequestMeta {
@@ -140,5 +142,5 @@ const pair = await this.tokenService.generateTokenPair(
 	{ deviceId, userAgent, ipAddress },
 );
 // pair.accessToken → в cookie
-// pair.refreshTokenPlain → в HttpOnly cookie
+// pair.refreshToken → в HttpOnly cookie
 ```

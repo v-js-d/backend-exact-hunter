@@ -1,14 +1,11 @@
+export type { AuthTokenPair } from '@/common/auth';
+
 export interface AccessTokenPayload {
 	sub: string;
 	roleContextId: string;
 	userRole: string;
 	companyId?: string | null;
 	hrRoleName?: string | null;
-}
-
-export interface TokenPair {
-	accessToken: string;
-	refreshTokenPlain: string;
 }
 
 export interface RequestMeta {
