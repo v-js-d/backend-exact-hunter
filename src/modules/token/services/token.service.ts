@@ -7,6 +7,7 @@ import ms, { StringValue } from 'ms';
 import { AccessTokenPayload, AuthTokenPair, RequestMeta } from '../types/token.type';
 import { TokenRepository } from '../repositories/token.repository';
 import { BCRYPT_SALT_ROUNDS, EnumTokenConfig, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
+import { getExpiresInFromConfig, getSecretFromConfig, getTtlFromConfig } from '../utils/get-token-configs.utils';
 
 @Injectable()
 export class TokenService {
@@ -17,13 +18,13 @@ export class TokenService {
 	) {}
 
 	private calculateRefreshExpiry(): Date {
-		const ttl = this.configService.getOrThrow<string>(EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN);
+		const ttl = getTtlFromConfig(this.configService);
 		return new Date(Date.now() + ms(ttl as StringValue));
 	}
 
 	generateAccessToken(payload: AccessTokenPayload): string {
-		const secret = this.configService.getOrThrow<string>(EnumTokenConfig.JWT_SECRET);
-		const expiresIn = this.configService.getOrThrow<string>(EnumTokenConfig.JWT_ACCESS_EXPIRES_IN);
+		const secret = getSecretFromConfig(this.configService);
+		const expiresIn = getExpiresInFromConfig(this.configService);
 
 		return this.jwtService.sign(
 			{ ...payload },
@@ -80,6 +81,20 @@ export class TokenService {
 			if (error instanceof JsonWebTokenError) {
 				throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);
 			}
+			throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);
+		}
+	}
+
+	/**
+	 * Декодирует access JWT и проверяет подпись, но игнорирует exp.
+	 * Нужен для `POST /auth/refresh` (и логина ротации): по просроченному access
+	 * с валидной подписью узнаём `sub` и `roleContextId` до проверки refresh в БД.
+	 */
+	async decodeAccessTokenIgnoringExpiration(accessToken: string): Promise<AccessTokenPayload> {
+		try {
+			const secret = getSecretFromConfig(this.configService);
+			return await this.jwtService.verifyAsync<AccessTokenPayload>(accessToken, { secret, ignoreExpiration: true });
+		} catch {
 			throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);
 		}
 	}

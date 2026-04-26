@@ -9,6 +9,7 @@ import { AuthModule } from '@/modules/auth';
 import { SmokeModule } from '@/modules/smoke';
 import { TokenModule } from '@/modules/token';
 import { CookieModule } from '@/common/cookie';
+import { UserModule } from '@/modules/user';
 
 @Module({
 	imports: [
@@ -24,10 +25,11 @@ import { CookieModule } from '@/common/cookie';
 		HealthModule,
 		SmokeModule,
 		MockModule,
-		AuthModule,
 		PrismaModule,
 		CookieModule,
 		TokenModule,
+		UserModule,
+		AuthModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })

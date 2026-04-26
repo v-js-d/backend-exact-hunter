@@ -11,7 +11,7 @@ model RoleContext {
   id String @id @default(uuid()) @db.Uuid
 
   userId String @map("user_id") @db.Uuid
-  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   userRole UserRole @map("user_role")
 

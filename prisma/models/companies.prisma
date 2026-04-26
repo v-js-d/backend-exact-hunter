@@ -7,16 +7,16 @@ model Company {
   companyType   CompanyType @relation(fields: [companyTypeId], references: [id], onDelete: Restrict)
 
   ownerId String @map("owner_id") @db.Uuid
-  owner   Users  @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner   User  @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
   createdBy     String? @map("created_by") @db.Uuid
-  createdByUser Users?  @relation("CompanyCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdByUser User?  @relation("CompanyCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
 
   updatedBy     String? @map("updated_by") @db.Uuid
-  updatedByUser Users?  @relation("CompanyUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+  updatedByUser User?  @relation("CompanyUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
 
   roleContexts RoleContext[]
 

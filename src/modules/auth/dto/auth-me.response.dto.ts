@@ -1,32 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from 'generated/prisma/enums';
-import { AuthTokenPair } from '@/common/auth';
 
-export class AuthSessionResponseDto {
+export class AuthMeResponseDto {
 	@ApiProperty({
 		type: String,
 		format: 'uuid',
 		description: 'ID пользователя',
 		example: 'a57fdb76-2480-4d15-a3ee-1a79eb9ca4f0',
 	})
-	userId!: string;
+	id!: string;
 
 	@ApiProperty({
 		type: String,
-		format: 'uuid',
-		description: 'ID role_context',
-		example: 'f4bb3803-34ff-4f6e-afde-3a2a5f42f80f',
+		format: 'email',
+		description: 'Email пользователя',
+		example: 'user@example.com',
 	})
-	roleContextId!: string;
+	email!: string;
 
 	@ApiProperty({
 		type: String,
 		enum: UserRole,
 		enumName: 'UserRole',
-		description: 'Роль контекста',
-		example: UserRole.CANDIDATE,
+		description: 'Роль пользователя из access контекста',
+		example: UserRole.EMPLOYER,
 	})
-	userRole!: UserRole;
-
-	tokens!: AuthTokenPair;
+	role!: UserRole;
 }

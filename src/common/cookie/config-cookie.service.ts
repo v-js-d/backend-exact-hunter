@@ -17,7 +17,7 @@ import {
 	REFRESH_COOKIE_NAME_ENV_KEY,
 	SAME_SITE_LAX,
 } from './cookie.consts';
-import { EnumTokenConfig } from '@/modules/token/consts/token.consts';
+import { getTtlFromConfig } from '@/modules/token';
 
 @Injectable()
 export class ConfigCookieService {
@@ -35,14 +35,20 @@ export class ConfigCookieService {
 		};
 	}
 
-	private accessTokenMaxAgeMs(): number {
-		const ttl = this.configService.getOrThrow<string>(EnumTokenConfig.JWT_ACCESS_EXPIRES_IN);
+	private refreshTokenMaxAgeMs(): number {
+		const ttl = getTtlFromConfig(this.configService);
 		return ms(ttl as StringValue);
 	}
 
-	private refreshTokenMaxAgeMs(): number {
-		const ttl = this.configService.getOrThrow<string>(EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN);
-		return ms(ttl as StringValue);
+	/**
+	 * Both cookies live as long as the refresh session does.
+	 * The access JWT inside the cookie still has its own short `exp` claim that
+	 * is enforced by the JWT strategy. Keeping the access cookie maxAge вровень с
+	 * refresh позволяет `POST /auth/refresh` читать (уже просроченный) access
+	 * ещё из куки и знать `sub` / `roleContextId` при ротации, пока сессия жива.
+	 */
+	private accessCookieMaxAgeMs(): number {
+		return this.refreshTokenMaxAgeMs();
 	}
 
 	private isSecureCookies(): boolean {
@@ -58,7 +64,7 @@ export class ConfigCookieService {
 	} {
 		const base = this.sharedCookieOptions();
 		return {
-			access: { ...base, maxAge: this.accessTokenMaxAgeMs() },
+			access: { ...base, maxAge: this.accessCookieMaxAgeMs() },
 			refresh: { ...base, maxAge: this.refreshTokenMaxAgeMs() },
 		};
 	}
