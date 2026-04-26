@@ -26,19 +26,10 @@
 
 ## Эндпоинты
 
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout`
-
-Формат body (для всех эндпоинтов):
-
-```json
-{
-	"userId": "uuid",
-	"roleContextId": "uuid",
-	"userRole": "CANDIDATE"
-}
-```
+- `POST /auth/login` — body: `AuthSessionRequestDto` (`userId`, `roleContextId`, `userRole`)
+- `POST /auth/refresh` — **без body**; access + refresh только в HttpOnly cookies
+- `GET /auth/me` — защищён `@AuthAccess()`
+- `POST /auth/logout` — защищён `@AuthAccess()`
 
 Разрешённые роли для cookie-auth: `CANDIDATE`, `EMPLOYER`.
 
@@ -46,20 +37,20 @@
 
 - `AuthService` проверяет `roleContext` в БД и строит payload для токена.
 - `TokenService` выпускает/валидирует/ротирует refresh-сессии.
-- `AuthCookieService` ставит и очищает HttpOnly cookies.
+- На `POST /auth/login` и `POST /auth/refresh` (с декоратором `@SetAuthCookie()`) **запись** access/refresh в HttpOnly куки делает **`AuthCookieInterceptor`**: сервис возвращает `tokens` в объекте ответа, интерцептор ставит `Set-Cookie` и **удаляет** `tokens` из тела. Очистка кук при ошибках, **logout** и чтение кук для refresh в коде `AuthService` — через `AuthCookieService` напрямую.
 - `cookie-parser` подключен в `main.ts`, поэтому доступны `req.cookies`.
 
 ## Контракт поведения
 
 - Login:
   - создаёт refresh-сессию в таблице `tokens`
-  - выставляет access + refresh cookies
+  - в ответе возвращается `tokens` → `@SetAuthCookie` / `AuthCookieInterceptor` выставляет access + refresh в куки и убирает `tokens` из JSON
 - Refresh (успех):
   - валидирует текущую refresh-сессию
   - ротирует сессию (старая удаляется, новая создаётся)
-  - обновляет cookies
-- Refresh (`401`):
-  - контроллер очищает обе auth-cookies
+  - то же: `tokens` в return → интерцептор пишет куки, тело без секретов
+- Refresh (ошибка, `401`):
+  - `AuthService` очищает обе auth-cookies
 - Logout:
   - пытается удалить текущую сессию
   - в любом случае очищает обе auth-cookies

@@ -85,6 +85,20 @@ export class TokenService {
 		}
 	}
 
+	/**
+	 * Декодирует access JWT и проверяет подпись, но игнорирует exp.
+	 * Нужен для `POST /auth/refresh` (и логина ротации): по просроченному access
+	 * с валидной подписью узнаём `sub` и `roleContextId` до проверки refresh в БД.
+	 */
+	async decodeAccessTokenIgnoringExpiration(accessToken: string): Promise<AccessTokenPayload> {
+		try {
+			const secret = getSecretFromConfig(this.configService);
+			return await this.jwtService.verifyAsync<AccessTokenPayload>(accessToken, { secret, ignoreExpiration: true });
+		} catch {
+			throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);
+		}
+	}
+
 	async validateRefreshToken(
 		refreshToken: string,
 		userId: string,

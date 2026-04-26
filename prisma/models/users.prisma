@@ -1,4 +1,4 @@
-model Users {
+model User {
   id             String   @id @default(uuid()) @db.Uuid
   email          String   @unique @db.VarChar(255)
   password       String   @db.VarChar(255)
@@ -8,13 +8,13 @@ model Users {
   updatedAt      DateTime @updatedAt @db.Timestamp(6)
 
   createdBy     String? @db.Uuid
-  createdByUser Users?  @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdByUser User?  @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
 
   updatedBy     String? @db.Uuid
-  updatedByUser Users?  @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+  updatedByUser User?  @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
 
-  createdUsers Users[] @relation("UsersCreatedBy")
-  updatedUsers Users[] @relation("UsersUpdatedBy")
+  createdUsers User[] @relation("UsersCreatedBy")
+  updatedUsers User[] @relation("UsersUpdatedBy")
 
   roleContexts     RoleContext[]
   tokens           Token[]

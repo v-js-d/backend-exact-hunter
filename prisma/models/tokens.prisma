@@ -2,7 +2,7 @@ model Token {
   id String @id @default(uuid()) @db.Uuid
 
   userId String @db.Uuid
-  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   roleContextId String      @db.Uuid
   roleContext   RoleContext @relation(fields: [roleContextId], references: [id], onDelete: Cascade)

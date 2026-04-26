@@ -1,9 +1,11 @@
+import { UserRole } from 'generated/prisma/enums';
+
 export type { AuthTokenPair } from '@/common/auth';
 
 export interface AccessTokenPayload {
 	sub: string;
 	roleContextId: string;
-	userRole: string;
+	userRole: UserRole;
 	companyId?: string | null;
 	hrRoleName?: string | null;
 }
