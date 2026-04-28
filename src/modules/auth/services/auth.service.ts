@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { User, UserRole } from 'generated/prisma/client';
 import { EnumAuthError } from '../consts/auth.errors';
-import { AuthenticatedUser } from '../types/authenticated-user.type';
-import { MeResponseDto } from '../dto/me/me-response.dto';
+import { AuthSessionRequestDto } from '../dto/auth-session/auth-session.request.dto';
 import { AuthSessionUserDto } from '../dto/auth-session/auth-session-user.dto';
+import { MeResponseDto } from '../dto/me/me-response.dto';
+import { AuthenticatedUser } from '../types/authenticated-user.type';
+import { AuthContextService } from './auth-context.service';
 import { AuthRequestMetaService } from './auth-request-meta.service';
 import { AuthCookieService, EnumCookieError } from '@/common/cookie';
+import { RoleContextService } from '@/modules/role-context';
 import { AuthTokenPair, TokenService } from '@/modules/token';
 import { UserService } from '@/modules/user';
 
@@ -16,7 +20,41 @@ export class AuthService {
 		private readonly authCookieService: AuthCookieService,
 		private readonly authRequestMetaService: AuthRequestMetaService,
 		private readonly userService: UserService,
+		private readonly roleContextService: RoleContextService,
+		private readonly authContextService: AuthContextService,
 	) {}
+
+	async getAuthenticatedToken(request: Request, userId: string, userRole: UserRole): Promise<AuthTokenPair> {
+		const roleContext = await this.roleContextService.findFirstForUserWithHrRole(userId, userRole);
+		if (!roleContext) {
+			throw new UnauthorizedException(EnumAuthError.ROLE_NOT_FOUND);
+		}
+
+		if (roleContext.userRole !== userRole) {
+			//пытается зайти как одна роль, но он на самом деле другая роль
+			//сейчас у нас один user = одна роль
+			//если будем менять - тут надо будет изменить
+			throw new UnauthorizedException(EnumAuthError.ROLE_NOT_ALLOWED);
+		}
+		const buildData: AuthSessionRequestDto = {
+			roleContextId: roleContext.id,
+			userId: userId,
+			userRole: roleContext.userRole,
+		};
+
+		const payload = await this.authContextService.buildAccessPayload(buildData);
+		const requestMeta = this.authRequestMetaService.fromRequest(request);
+		const pair = await this.tokenService.generateTokenPair(payload, requestMeta);
+		return pair;
+	}
+	getAuthenticatedUser(user: User, userRole: UserRole): AuthSessionUserDto {
+		return {
+			id: user.id,
+			email: user.email,
+			role: userRole,
+			isActivated: user.isActivated,
+		};
+	}
 
 	async refresh(
 		request: Request,
