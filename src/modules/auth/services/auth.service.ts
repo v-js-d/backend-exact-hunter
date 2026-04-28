@@ -1,44 +1,65 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { AuthMeResponseDto } from '../dto/auth-me.response.dto';
-import { AuthSessionRequestDto } from '../dto/auth-session.request.dto';
-import { AuthSessionResponseDto } from '../dto/auth-session.response.dto';
+import { User, UserRole } from 'generated/prisma/client';
+import { EnumAuthError } from '../consts/auth.errors';
+import { AuthSessionRequestDto } from '../dto/auth-session/auth-session.request.dto';
+import { AuthSessionUserDto } from '../dto/auth-session/auth-session-user.dto';
+import { MeResponseDto } from '../dto/me/me-response.dto';
 import { AuthenticatedUser } from '../types/authenticated-user.type';
 import { AuthContextService } from './auth-context.service';
 import { AuthRequestMetaService } from './auth-request-meta.service';
 import { AuthCookieService, EnumCookieError } from '@/common/cookie';
+import { RoleContextService } from '@/modules/role-context';
 import { AuthTokenPair, TokenService } from '@/modules/token';
+import { UserService } from '@/modules/user';
 
-/**
- * Оркестратор auth-флоу.
- *
- * Login/refresh с `@SetAuthCookie` возвращают `tokens` в DTO — куки ставит
- * `AuthCookieInterceptor`. Очистка кук (ошибка refresh, logout) и чтение кук для
- * refresh — через `AuthCookieService` в этом сервисе.
- */
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly tokenService: TokenService,
 		private readonly authCookieService: AuthCookieService,
-		private readonly authContextService: AuthContextService,
 		private readonly authRequestMetaService: AuthRequestMetaService,
+		private readonly userService: UserService,
+		private readonly roleContextService: RoleContextService,
+		private readonly authContextService: AuthContextService,
 	) {}
 
-	async login(dto: AuthSessionRequestDto, request: Request): Promise<AuthSessionResponseDto> {
-		const payload = await this.authContextService.buildAccessPayload(dto);
+	async getAuthenticatedToken(request: Request, userId: string, userRole: UserRole): Promise<AuthTokenPair> {
+		const roleContext = await this.roleContextService.findFirstForUserWithHrRole(userId, userRole);
+		if (!roleContext) {
+			throw new UnauthorizedException(EnumAuthError.ROLE_NOT_FOUND);
+		}
+
+		if (roleContext.userRole !== userRole) {
+			//пытается зайти как одна роль, но он на самом деле другая роль
+			//сейчас у нас один user = одна роль
+			//если будем менять - тут надо будет изменить
+			throw new UnauthorizedException(EnumAuthError.ROLE_NOT_ALLOWED);
+		}
+		const buildData: AuthSessionRequestDto = {
+			roleContextId: roleContext.id,
+			userId: userId,
+			userRole: roleContext.userRole,
+		};
+
+		const payload = await this.authContextService.buildAccessPayload(buildData);
 		const requestMeta = this.authRequestMetaService.fromRequest(request);
 		const pair = await this.tokenService.generateTokenPair(payload, requestMeta);
-
+		return pair;
+	}
+	getAuthenticatedUser(user: User, userRole: UserRole): AuthSessionUserDto {
 		return {
-			tokens: pair,
-			userId: payload.sub,
-			roleContextId: payload.roleContextId,
-			userRole: payload.userRole,
+			id: user.id,
+			email: user.email,
+			role: userRole,
+			isActivated: user.isActivated,
 		};
 	}
 
-	async refresh(request: Request, response: Response): Promise<{ tokens: AuthTokenPair; ok: true }> {
+	async refresh(
+		request: Request,
+		response: Response,
+	): Promise<{ tokens: AuthTokenPair; ok: true; user: AuthSessionUserDto }> {
 		const refreshToken = this.authCookieService.getRefreshToken(request);
 		const accessToken = this.authCookieService.getAccessToken(request);
 
@@ -55,7 +76,22 @@ export class AuthService {
 
 			const newPair = await this.tokenService.rotateRefreshToken(payload, meta);
 
-			return { tokens: newPair, ok: true };
+			const user = await this.userService.findById(payload.sub);
+			if (!user) {
+				this.authCookieService.clearAuthCookies(response);
+				throw new UnauthorizedException();
+			}
+
+			return {
+				tokens: newPair,
+				ok: true,
+				user: {
+					id: user.id,
+					email: user.email,
+					role: payload.userRole,
+					isActivated: user.isActivated,
+				},
+			};
 		} catch {
 			this.authCookieService.clearAuthCookies(response);
 			throw new UnauthorizedException();
@@ -71,11 +107,27 @@ export class AuthService {
 		}
 	}
 
-	me(currentUser: AuthenticatedUser): AuthMeResponseDto {
+	me(current: AuthenticatedUser): MeResponseDto {
 		return {
-			id: currentUser.user.id,
-			email: currentUser.user.email,
-			role: currentUser.currentRole,
+			user: {
+				id: current.user.id,
+				email: current.user.email,
+				role: current.currentRole,
+				userRoleName: current.hrRoleName ?? null,
+				isActivated: current.user.isActivated,
+			},
 		};
+	}
+
+	/** Тестовый endpoint: удаляет `User`; `RoleContext`, `Token` и др.
+	 *
+	 * `onDelete: Cascade` уходят сами (см. Prisma schema). */
+	async delete(id: string): Promise<boolean> {
+		try {
+			await this.userService.delete(id);
+			return true;
+		} catch {
+			throw new NotFoundException(EnumAuthError.USER_NOT_FOUND);
+		}
 	}
 }

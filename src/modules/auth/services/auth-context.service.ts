@@ -1,14 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from 'generated/prisma/enums';
 import { EnumAuthError } from '../consts/auth.errors';
-import { AuthSessionRequestDto } from '../dto/auth-session.request.dto';
+import { AuthSessionRequestDto } from '../dto/auth-session/auth-session.request.dto';
 import { AuthenticatedUser } from '../types/authenticated-user.type';
+import { RoleContextService } from '@/modules/role-context';
 import { AccessTokenPayload } from '@/modules/token';
-import { PrismaService } from '@/prisma';
+import { UserService } from '@/modules/user';
 
 @Injectable()
 export class AuthContextService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly roleContextService: RoleContextService,
+	) {}
 
 	private assertRoleScope(role: UserRole): asserts role is typeof UserRole.CANDIDATE | typeof UserRole.EMPLOYER {
 		if (role !== UserRole.CANDIDATE && role !== UserRole.EMPLOYER) {
@@ -18,10 +22,7 @@ export class AuthContextService {
 
 	async buildAccessPayload(dto: AuthSessionRequestDto): Promise<AccessTokenPayload> {
 		this.assertRoleScope(dto.userRole);
-		const roleContext = await this.prisma.roleContext.findUnique({
-			where: { id: dto.roleContextId },
-			include: { hrRole: true },
-		});
+		const roleContext = await this.roleContextService.findByIdWithHrRole(dto.roleContextId);
 
 		if (!roleContext || roleContext.userId !== dto.userId || roleContext.userRole !== dto.userRole) {
 			throw new UnauthorizedException(EnumAuthError.INVALID_ROLE_CONTEXT);
@@ -44,23 +45,24 @@ export class AuthContextService {
 	async buildAuthenticatedUser(payload: AccessTokenPayload): Promise<AuthenticatedUser> {
 		this.assertRoleScope(payload.userRole);
 
-		const user = await this.prisma.user.findUnique({
-			where: { id: payload.sub },
-			select: { id: true, email: true },
-		});
+		const user = await this.userService.findByIdWithRoleContexts(payload.sub);
 		if (!user) {
 			throw new UnauthorizedException(EnumAuthError.USER_NOT_FOUND);
 		}
 
-		const roleContext = await this.prisma.roleContext.findUnique({
-			where: { id: payload.roleContextId },
-		});
-		if (!roleContext || roleContext.userId !== payload.sub || roleContext.userRole !== payload.userRole) {
+		const roleContext = user.roleContexts.find(
+			(rc) => rc.id === payload.roleContextId && rc.userRole === payload.userRole,
+		);
+		if (!roleContext || roleContext.userId !== payload.sub) {
 			throw new UnauthorizedException(EnumAuthError.INVALID_ROLE_CONTEXT);
 		}
 
 		return {
-			user: { id: user.id, email: user.email },
+			user: {
+				id: user.id,
+				email: user.email,
+				isActivated: user.isActivated,
+			},
 			currentRole: payload.userRole,
 			roleContextId: payload.roleContextId,
 			companyId: payload.companyId,

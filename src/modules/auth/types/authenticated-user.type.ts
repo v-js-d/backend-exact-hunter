@@ -9,6 +9,7 @@ import { UserRole } from 'generated/prisma/enums';
 export interface AuthenticatedUserProfile {
 	id: string;
 	email: string;
+	isActivated: boolean;
 }
 
 export interface AuthenticatedUser {
