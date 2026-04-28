@@ -25,7 +25,8 @@
 		"typecheck": "tsc --noEmit --incremental false --pretty",
 		"prisma:generate": "pnpm dlx prisma generate",
 		"prisma:migrate:dev": "pnpm dlx prisma migrate dev",
-		"prisma:seed": "pnpm dlx prisma db seed"
+		"prisma:seed": "pnpm dlx prisma db seed",
+		"prisma:deploy": "prisma migrate deploy"
 	},
 	"dependencies": {
 		"@nestjs/common": "^11.0.1",

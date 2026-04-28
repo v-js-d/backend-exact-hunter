@@ -7,16 +7,20 @@ import { AuthContextService } from './services/auth-context.service';
 import { AuthRequestMetaService } from './services/auth-request-meta.service';
 import { AuthService } from './services/auth.service';
 import { AccessJwtStrategy } from './strategies/access-jwt.strategy';
+import { LoginUseCase } from './use-cases/login.use-case';
+import { RegisterUseCase } from './use-cases/register.use-case';
 import { CookieModule } from '@/common/cookie';
+import { RoleContextModule } from '@/modules/role-context';
 import { TokenModule } from '@/modules/token';
-import { PrismaModule } from '@/prisma';
 import { UserModule } from '@/modules/user';
 
 @Module({
-	imports: [PrismaModule, TokenModule, CookieModule, UserModule],
+	imports: [TokenModule, CookieModule, UserModule, RoleContextModule],
 	controllers: [AuthController],
 	providers: [
 		AuthService,
+		LoginUseCase,
+		RegisterUseCase,
 		AuthRequestMetaService,
 		AuthContextService,
 		AccessJwtStrategy,

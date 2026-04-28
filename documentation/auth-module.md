@@ -1,73 +1,59 @@
-# Auth Module (временная тестовая реализация)
+# Auth API — кратко для фронта и merge
 
-## Важно: обновление контракта
+## Куки и токены
 
-- В этой ветке тип пары токенов унифицирован и реэкспортируется из token-модуля:
-  - `export type { AuthTokenPair } from '@/common/auth';`
-- `TokenModule` сейчас в процессе PR. Если возникают конфликты, по контракту пары токенов (`accessToken`, `refreshToken`) ориентируемся на эту ветку.
+- **Access JWT** и **refresh** (opaque) сервер читает из **HttpOnly** cookies (имена по умолчанию: `access_token`, `refresh_token`; см. `documentation/cookie.md`). Фронт **не кладёт** их в `localStorage` и **не шлёт** в body.
+- Запросы с сессией: `fetch(..., { credentials: 'include' })` (или axios `withCredentials: true`).
+- После `@SetAuthCookie()` интерцептор **удаляет** `tokens` из JSON — в теле остаётся только публичная часть ответа.
 
-## Назначение
+## Эндпоинты (фактический контракт сейчас)
 
-Текущий `auth` модуль сделан намеренно простым, чтобы быстро и прозрачно проверить end-to-end сценарии cookies + refresh-сессий.
+`POST /auth/register` — body `RegisterDto`, `@SetAuthCookie`, после интерцептора тело `{ id, isActivated }`, HTTP **201**.
 
-Это пока не полноценный production auth (логин по email/password и т.д. ещё не внедрён).
+`POST /auth/login` — body `LoginDto`, `@SetAuthCookie`, после интерцептора тело `{ id, isActivated }`, HTTP **200**.
 
-## Структура модуля
+`POST /auth/refresh` — без body, `@SetAuthCookie`, HTTP **204** (тело без полезной JSON-нагрузки в типичном сценарии).
 
-`src/modules/auth/`
+`POST /auth/logout` — куки очищаются, тело `{ ok: true }`, HTTP **200**.
 
-- `controllers/auth.controller.ts`
-- `services/auth.service.ts`
-- `dto/auth-session.request.dto.ts`
-- `dto/auth-session.response.dto.ts`
-- `dto/auth-logout.response.dto.ts`
-- `auth.module.ts`
-- `index.ts`
+`GET /auth/me` — тело `{ id, isActivated }`, HTTP **200**.
 
-## Эндпоинты
+**Guard:** `GET /auth/me`, `POST /auth/logout` — `@AuthAccess()` (JWT из access-cookie).
 
-- `POST /auth/login` — body: `AuthSessionRequestDto` (`userId`, `roleContextId`, `userRole`)
-- `POST /auth/refresh` — **без body**; access + refresh только в HttpOnly cookies
-- `GET /auth/me` — защищён `@AuthAccess()`
-- `POST /auth/logout` — защищён `@AuthAccess()`
+## DTO / валидация (`src/modules/auth/dto/...`)
 
-Разрешённые роли для cookie-auth: `CANDIDATE`, `EMPLOYER`.
+- **RegisterDto / LoginDto:** `email` (`@IsEmail`), `password` (`@IsPassword` → длина **8–32**), `role` — enum **Prisma** `UserRole`: `CANDIDATE` \| `EMPLOYER` \| `ADMIN` (для register/login допускаются только **CANDIDATE** и **EMPLOYER**, иначе 401 с кодом из `EnumAuthError`).
+- **Refresh:** body не нужен (MVP).
+- **Me:** отдельного request DTO нет — данные из `request.user` после guard.
 
-## Как это работает
+## Ошибки (ориентир)
 
-- `AuthService` проверяет `roleContext` в БД и строит payload для токена.
-- `TokenService` выпускает/валидирует/ротирует refresh-сессии.
-- На `POST /auth/login` и `POST /auth/refresh` (с декоратором `@SetAuthCookie()`) **запись** access/refresh в HttpOnly куки делает **`AuthCookieInterceptor`**: сервис возвращает `tokens` в объекте ответа, интерцептор ставит `Set-Cookie` и **удаляет** `tokens` из тела. Очистка кук при ошибках, **logout** и чтение кук для refresh в коде `AuthService` — через `AuthCookieService` напрямую.
-- `cookie-parser` подключен в `main.ts`, поэтому доступны `req.cookies`.
+- **401:** нет/битый access (в т.ч. `GET /auth/me`); нет/битый refresh или ошибка ротации (`POST /auth/refresh`); неверные креды / роль / пользователь (`POST /auth/login`); запрещённая роль при register.
+- **409:** `POST /auth/register` — email уже есть (`USER_EMAIL_ALREADY_EXISTS`).
+- Формат тела ошибок — **глобальный фильтр** (`GlobalExceptionFilter` / `@core/response`), не размечать вручную в каждом хендлере.
 
-## Контракт поведения
+## Swagger
 
-- Login:
-  - создаёт refresh-сессию в таблице `tokens`
-  - в ответе возвращается `tokens` → `@SetAuthCookie` / `AuthCookieInterceptor` выставляет access + refresh в куки и убирает `tokens` из JSON
-- Refresh (успех):
-  - валидирует текущую refresh-сессию
-  - ротирует сессию (старая удаляется, новая создаётся)
-  - то же: `tokens` в return → интерцептор пишет куки, тело без секретов
-- Refresh (ошибка, `401`):
-  - `AuthService` очищает обе auth-cookies
-- Logout:
-  - пытается удалить текущую сессию
-  - в любом случае очищает обе auth-cookies
+- Описать security: access читается из **cookie** (JWT), не обязательно Bearer в header — привести в соответствие с реальным `AccessJwtStrategy`.
+- Указать, что login/register/refresh выставляют HttpOnly cookies; токены в Swagger-response для login/register — в схеме могут фигурировать до интерцептора; фактически клиент их в JSON не получает.
 
-## Текущие ограничения (осознанные)
+## Сделано (кратко)
 
-- Нет полноценного credential flow (это тестовый session API).
-- Пока нет отдельного публичного `getAccessToken(req)` сценария.
-- Используется один набор auth-cookie (`access_token`, `refresh_token`), одновременная работа в двух ролях в одном браузере не поддерживается в текущем контракте.
-- Роль `ADMIN` осознанно исключена из cookie-auth потока на данном этапе.
+- Cookie-based access + refresh, ротация refresh, logout с очисткой cookies (`AuthService` + `TokenService` + `AuthCookieInterceptor`).
+- `RegisterUseCase` / `LoginUseCase`, хеш пароля при register (bcrypt), `isActivated: true` сразу (MVP без почты), после register — выдача пары токенов и те же куки, что при login.
+- Поиск `RoleContext` по пользователю: `findFirstForUserWithHrRole(userId, userRole)` (не по id контекста с user.id).
+- `UserService` / `RoleContextService` как публичный API модулей; auth-context для JWT payload.
 
-## Зачем модуль добавлен сейчас
+## Не сделано относительно целевого контракта (MVP+ / спека)
 
-Этот модуль нужен, чтобы стабилизировать базовый контракт:
+- Тело **`{ user: { id, email, role } }`** на register/login/refresh — сейчас плоское **`{ id, isActivated }`**; **email/role** в этих ответах не отдаются.
+- Роль **`RECRUITER` в API** и маппинг на **`EMPLOYER`** в БД; поля компании для рекрутера; **`CandidateProfile`** при кандидате; поиск **`HR_ADMIN`** и создание **Company** — не реализованы.
+- **`GET /auth/me`:** нет `email`, нет `role` / `userRoleName` (только `id`, `isActivated`).
+- **`POST /auth/login`:** сравнение пароля с hash в БД (**bcrypt.compare**) **не подключено** — принимается любой пароль при верном email и роли.
+- **`POST /auth/refresh`:** в спеке ожидался JSON с пользователем; сейчас **204** без тела с профилем.
+- **`POST /auth/logout`:** ответ `{ ok: true }`, не `{ message: string }`.
+- **Swagger:** полная security-схема под cookies + описание для фронта — в работе.
 
-- централизованные настройки cookies
-- обязательная очистка cookies на ошибках refresh/logout
-- корректная ротация refresh-сессий в БД
+## Структура кода
 
-После подтверждения сценариев модуль можно развить до полноценного auth с реальными use-case логина, guard-ами и более полной доменной моделью.
+`src/modules/auth/` — `controllers/`, `services/`, `use-cases/`, `dto/` (в т.ч. `login/`, `register/`, `me/`, `logout/`, `auth-session/`), `guards/`, `strategies/`, `types/`, `consts/`.

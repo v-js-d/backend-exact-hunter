@@ -1,16 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'generated/prisma/client';
+import { ICreateUser } from '../types/user.type';
 import { UserRepository } from '../repositories/user.repository';
+import { UserWithRoleContexts } from '../types/user-with-role-contexts.type';
 
 @Injectable()
 export class UserService {
 	constructor(private readonly userRepository: UserRepository) {}
 
-	findById(id: string): Promise<User | null> {
-		return this.userRepository.findById(id);
+	async findById(id: string): Promise<User | null> {
+		return await this.userRepository.findById(id);
 	}
 
-	findByEmail(email: string): Promise<User | null> {
-		return this.userRepository.findByEmail(email);
+	async findByEmail(email: string): Promise<User | null> {
+		return await this.userRepository.findByEmail(email);
+	}
+
+	async findByIdWithRoleContexts(id: string): Promise<UserWithRoleContexts | null> {
+		return await this.userRepository.findByIdWithRoleContexts(id);
+	}
+
+	async findByEmailWithRoleContexts(email: string): Promise<UserWithRoleContexts | null> {
+		return await this.userRepository.findByEmailWithRoleContexts(email);
+	}
+
+	async create(user: ICreateUser): Promise<User> {
+		return await this.userRepository.create(user);
+	}
+
+	async update(id: string, user: Partial<User>): Promise<User> {
+		return await this.userRepository.update(id, user);
+	}
+	async delete(id: string): Promise<void> {
+		const deleted = await this.userRepository.delete(id);
+		if (!deleted) {
+			throw new NotFoundException('USER_NOT_FOUND');
+		}
 	}
 }
