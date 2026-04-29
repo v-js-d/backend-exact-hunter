@@ -31,6 +31,8 @@ jobs:
 
       - name: Generate Prisma client
         run: pnpm prisma:generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/exact_hunter
 
       - name: Lint
         run: pnpm lint:ci
@@ -63,6 +65,8 @@ jobs:
           context: .
           push: true
           tags: ${{ vars.DOCKER_IMAGE_BACKEND }}:dev
+          build-args: |
+            DATABASE_URL=postgresql://postgres:postgres@localhost:5432/exact_hunter
 
   deploy:
     needs: docker
@@ -76,8 +80,10 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             cd ~/infra/dev/backend
-            docker compose pull
-            docker compose up -d
+            docker compose pull backend
+            docker compose up -d exact-hunter-postgres
+            docker compose run --rm --no-deps backend pnpm prisma:deploy
+            docker compose up -d --force-recreate backend
             docker image prune -f
 
       - name: Smoke-check /health
