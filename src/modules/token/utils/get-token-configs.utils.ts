@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config';
+import ms, { StringValue } from 'ms';
 import { EnumTokenConfig } from '../consts/token.consts';
 
-export const getExpiresInFromConfig = (configService: ConfigService): string => {
-	const key = EnumTokenConfig.JWT_ACCESS_EXPIRES_IN;
-	const expiresIn = configService.getOrThrow<string>(key);
-	return expiresIn;
+/** Строка вида `15m` / `7d` для access JWT (`signOptions.expiresIn`) и для `ms`. */
+export const getExpiresInFromConfig = (configService: ConfigService): StringValue => {
+	const expiresIn = configService.getOrThrow<string>(EnumTokenConfig.JWT_ACCESS_EXPIRES_IN);
+	return expiresIn as StringValue;
 };
 
 export const getSecretFromConfig = (configService: ConfigService): string => {
@@ -13,8 +14,12 @@ export const getSecretFromConfig = (configService: ConfigService): string => {
 	return secret;
 };
 
-export const getTtlFromConfig = (configService: ConfigService): string => {
-	const key = EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN;
-	const ttl = configService.getOrThrow<string>(key);
-	return ttl;
+/** Длительность refresh-сессии в миллисекундах (cookie maxAge, expires в БД). */
+export const getTtlFromConfig = (configService: ConfigService): number => {
+	const ttl = configService.getOrThrow<string>(EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN);
+	const msVal = ms(ttl as StringValue);
+	if (typeof msVal !== 'number') {
+		throw new Error(`Invalid ${EnumTokenConfig.REFRESH_TOKEN_EXPIRES_IN}`);
+	}
+	return msVal;
 };

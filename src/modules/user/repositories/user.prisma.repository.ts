@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, User } from 'generated/prisma/client';
+import { EnumIdentifierType, Prisma, User } from 'generated/prisma/client';
 import { ICreateUser } from '../types/user.type';
-import { USER_WITH_ROLE_CONTEXTS_INCLUDE } from '../types/user-with-role-contexts.type';
+import { USER_WITH_ROLE_CONTEXTS_INCLUDE, UserWithRoleContexts } from '../types/user-with-role-contexts.type';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '@/prisma';
 
@@ -14,10 +14,11 @@ export class UserPrismaRepository implements UserRepository {
 			where: { id },
 		});
 	}
-
-	async findByEmail(email: string): Promise<User | null> {
+	async findByIdentifier(identifier: string, type: EnumIdentifierType): Promise<User | null> {
+		const identifierWhere: Prisma.UserWhereUniqueInput =
+			type === EnumIdentifierType.EMAIL ? { email: identifier } : { phone: identifier };
 		return this.prisma.user.findUnique({
-			where: { email },
+			where: identifierWhere,
 		});
 	}
 
@@ -28,9 +29,14 @@ export class UserPrismaRepository implements UserRepository {
 		});
 	}
 
-	async findByEmailWithRoleContexts(email: string) {
+	async findByIdentifierWithRoleContexts(
+		identifier: string,
+		type: EnumIdentifierType,
+	): Promise<UserWithRoleContexts | null> {
+		const identifierWhere: Prisma.UserWhereUniqueInput =
+			type === EnumIdentifierType.EMAIL ? { email: identifier } : { phone: identifier };
 		return this.prisma.user.findUnique({
-			where: { email },
+			where: identifierWhere,
 			include: USER_WITH_ROLE_CONTEXTS_INCLUDE,
 		});
 	}

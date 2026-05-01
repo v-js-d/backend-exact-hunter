@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { resolveDeviceIdFromHeaders } from '@/common/auth';
-import { RequestMeta } from '@/modules/token';
+import { IRequestMeta } from '@/modules/token';
 
 @Injectable()
-export class AuthRequestMetaService {
-	fromRequest(request: Request): RequestMeta {
+export class AuthIRequestMetaService {
+	fromRequest(request: Request): IRequestMeta {
 		const deviceId = resolveDeviceIdFromHeaders(request.headers);
 		return {
 			deviceId,

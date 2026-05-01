@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import type { Request } from 'express';
-import { LoginResponseDto } from '../dto/login/login-response.dto';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
 import { EnumAuthError } from '../consts/auth.errors';
-import { LoginDto } from '../dto/login/login-request.dto';
+import { IdentifyDto } from '../dto/identify/identify.dto';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '@/modules/user';
 
@@ -14,10 +14,10 @@ export class LoginUseCase {
 		private readonly authService: AuthService,
 	) {}
 
-	async execute(dto: LoginDto, request: Request): Promise<LoginResponseDto> {
-		const user = await this.userService.findByEmail(dto.email);
+	async execute(dto: IdentifyDto, request: Request): Promise<AuthResponseDto> {
+		const user = await this.userService.findByIdentifier(dto.identifier, dto.type);
 		if (!user) {
-			throw new UnauthorizedException(EnumAuthError.INVALID_CREDENTIALS);
+			throw new UnauthorizedException(EnumAuthError.USER_NOT_FOUND);
 		}
 
 		const passwordOk = await bcrypt.compare(dto.password, user.password);

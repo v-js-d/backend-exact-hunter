@@ -24,13 +24,10 @@ import { AuthLogoutResponseDto } from '../dto/logout/auth-logout.response.dto';
 import { RegisterUseCase } from '../use-cases/register.use-case';
 import { LoginUseCase } from '../use-cases/login.use-case';
 import { AuthService } from '../services/auth.service';
-import type { AuthenticatedUser } from '../types/authenticated-user.type';
-import { LoginResponseDto } from '../dto/login/login-response.dto';
-import { LoginDto } from '../dto/login/login-request.dto';
+import type { AuthenticatedUser } from '../types/authenticated-user.interface';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
+import { IdentifyDto } from '../dto/identify/identify.dto';
 import { MeResponseDto } from '../dto/me/me-response.dto';
-import { RefreshResponseDto } from '../dto/refresh/refresh-response.dto';
-import { RegisterDto } from '../dto/register/register-request.dto';
-import { RegisterResponseDto } from '../dto/register/register-response.dto';
 import { ApiErrorResponse, ApiSuccessResponse, AuthAccess, CurrentUser, SetAuthCookie } from '@/common/decorators';
 
 @ApiTags('auth')
@@ -51,8 +48,8 @@ export class AuthController {
 		HttpStatus.UNAUTHORIZED,
 		HttpStatus.INTERNAL_SERVER_ERROR,
 	])
-	@ApiSuccessResponse(RegisterResponseDto)
-	async register(@Body() body: RegisterDto, @Req() request: Request): Promise<RegisterResponseDto> {
+	@ApiSuccessResponse(AuthResponseDto)
+	async register(@Body() body: IdentifyDto, @Req() request: Request): Promise<AuthResponseDto> {
 		return await this.registerUseCase.execute(body, request);
 	}
 
@@ -60,17 +57,17 @@ export class AuthController {
 	@SetAuthCookie() //устанавливает токены в куки, удаляет их из ответа
 	@HttpCode(HttpStatus.OK)
 	@ApiErrorResponse([HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED, HttpStatus.INTERNAL_SERVER_ERROR])
-	@ApiSuccessResponse(LoginResponseDto)
-	async login(@Body() body: LoginDto, @Req() request: Request): Promise<LoginResponseDto> {
+	@ApiSuccessResponse(AuthResponseDto)
+	async login(@Body() body: IdentifyDto, @Req() request: Request): Promise<AuthResponseDto> {
 		return await this.loginUseCase.execute(body, request);
 	}
 
 	@Post('refresh')
 	@SetAuthCookie() //устанавливает токены в куки, удаляет их из ответа
 	@HttpCode(HttpStatus.OK)
-	@ApiSuccessResponse(RefreshResponseDto)
+	@ApiSuccessResponse(AuthResponseDto)
 	@ApiErrorResponse([HttpStatus.UNAUTHORIZED, HttpStatus.INTERNAL_SERVER_ERROR])
-	async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<RefreshResponseDto> {
+	async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<AuthResponseDto> {
 		return await this.authService.refresh(request, response);
 	}
 

@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from 'generated/prisma/enums';
 import { EnumAuthError } from '../consts/auth.errors';
-import { AuthSessionRequestDto } from '../dto/auth-session/auth-session.request.dto';
-import { AuthenticatedUser } from '../types/authenticated-user.type';
+import { AuthenticatedUser } from '../types/authenticated-user.interface';
+import { IAuthBuildPayload } from '../types/authenticated-context.interface';
 import { RoleContextService } from '@/modules/role-context';
-import { AccessTokenPayload } from '@/modules/token';
+import { IAccessTokenPayload } from '@/modules/token';
 import { UserService } from '@/modules/user';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class AuthContextService {
 		}
 	}
 
-	async buildAccessPayload(dto: AuthSessionRequestDto): Promise<AccessTokenPayload> {
+	async buildAccessPayload(dto: IAuthBuildPayload): Promise<IAccessTokenPayload> {
 		this.assertRoleScope(dto.userRole);
 		const roleContext = await this.roleContextService.findByIdWithHrRole(dto.roleContextId);
 
@@ -42,7 +42,7 @@ export class AuthContextService {
 	 * role-context до сих пор существуют и согласованы, и возвращает безопасный
 	 * объект профиля, который цепляют `AccessJwtStrategy.validate`.
 	 */
-	async buildAuthenticatedUser(payload: AccessTokenPayload): Promise<AuthenticatedUser> {
+	async buildAuthenticatedUser(payload: IAccessTokenPayload): Promise<AuthenticatedUser> {
 		this.assertRoleScope(payload.userRole);
 
 		const user = await this.userService.findByIdWithRoleContexts(payload.sub);
@@ -60,7 +60,9 @@ export class AuthContextService {
 		return {
 			user: {
 				id: user.id,
-				email: user.email,
+				email: user.email ?? undefined,
+				phone: user.phone ?? undefined,
+				identifierType: user.identifierType,
 				isActivated: user.isActivated,
 			},
 			currentRole: payload.userRole,
