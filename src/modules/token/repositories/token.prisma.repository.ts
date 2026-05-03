@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Token } from 'generated/prisma/client';
-import { SaveTokenParams } from '../types/token.type';
+import { ISaveTokenParams } from '../types/token.type';
 import { TokenRepository } from './token.repository';
 import { PrismaService } from '@/prisma';
 
@@ -8,7 +8,7 @@ import { PrismaService } from '@/prisma';
 export class TokenPrismaRepository implements TokenRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async save(params: SaveTokenParams): Promise<Token> {
+	async save(params: ISaveTokenParams): Promise<Token> {
 		const existing = await this.findByUserAndDevice(params.userId, params.roleContextId, params.deviceId);
 
 		if (existing) {

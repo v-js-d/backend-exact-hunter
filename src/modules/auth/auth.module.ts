@@ -4,7 +4,7 @@ import { AuthController } from './controllers/auth.controller';
 import { AccessJwtGuard } from './guards/access-jwt.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { AuthContextService } from './services/auth-context.service';
-import { AuthRequestMetaService } from './services/auth-request-meta.service';
+import { AuthIRequestMetaService } from './services/auth-request-meta.service';
 import { AuthService } from './services/auth.service';
 import { AccessJwtStrategy } from './strategies/access-jwt.strategy';
 import { LoginUseCase } from './use-cases/login.use-case';
@@ -21,7 +21,7 @@ import { UserModule } from '@/modules/user';
 		AuthService,
 		LoginUseCase,
 		RegisterUseCase,
-		AuthRequestMetaService,
+		AuthIRequestMetaService,
 		AuthContextService,
 		AccessJwtStrategy,
 		AccessJwtGuard,

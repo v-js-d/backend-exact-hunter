@@ -1,4 +1,4 @@
-import { UserRole } from 'generated/prisma/enums';
+import { EnumIdentifierType, UserRole } from 'generated/prisma/enums';
 
 /**
  * Минимальное безопасное представление пользователя, кладётся в `request.user`
@@ -8,7 +8,9 @@ import { UserRole } from 'generated/prisma/enums';
  */
 export interface AuthenticatedUserProfile {
 	id: string;
-	email: string;
+	email?: string;
+	phone?: string;
+	identifierType: EnumIdentifierType;
 	isActivated: boolean;
 }
 

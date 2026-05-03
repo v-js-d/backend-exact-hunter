@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AuthSessionUserDto } from '../auth-session/auth-session-user.dto';
+import { AuthSessionUserDto } from './auth-session-user.dto';
 import { AuthTokenPair } from '@/common/auth';
 
-export class LoginResponseDto {
+export class AuthResponseDto {
 	@ApiProperty({ type: () => AuthSessionUserDto })
 	user!: AuthSessionUserDto;
 

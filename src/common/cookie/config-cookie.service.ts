@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CookieOptions } from 'express';
-import ms, { StringValue } from 'ms';
 
 import {
 	ACCESS_COOKIE_NAME_ENV_KEY,
@@ -15,7 +14,7 @@ import {
 	NODE_ENV_ENV_KEY,
 	NODE_ENV_PRODUCTION,
 	REFRESH_COOKIE_NAME_ENV_KEY,
-	SAME_SITE_LAX,
+	SAME_SITE_DEV,
 } from './cookie.consts';
 import { getTtlFromConfig } from '@/modules/token';
 
@@ -24,20 +23,19 @@ export class ConfigCookieService {
 	constructor(private readonly configService: ConfigService) {}
 
 	private sharedCookieOptions(): Pick<CookieOptions, 'httpOnly' | 'secure' | 'sameSite' | 'path' | 'domain'> {
-		const domain = this.configService.get<string>(AUTH_COOKIE_DOMAIN_ENV_KEY)?.trim();
+		const domain = this.configService.getOrThrow<string>(AUTH_COOKIE_DOMAIN_ENV_KEY)?.trim();
 		const secure = this.isSecureCookies();
 		return {
 			httpOnly: true,
 			secure,
-			sameSite: SAME_SITE_LAX,
+			sameSite: SAME_SITE_DEV,
 			path: COOKIE_PATH_ROOT,
 			domain: domain && domain.length > 0 ? domain : undefined,
 		};
 	}
 
 	private refreshTokenMaxAgeMs(): number {
-		const ttl = getTtlFromConfig(this.configService);
-		return ms(ttl as StringValue);
+		return getTtlFromConfig(this.configService);
 	}
 
 	/**
@@ -52,10 +50,10 @@ export class ConfigCookieService {
 	}
 
 	private isSecureCookies(): boolean {
-		const explicit = this.configService.get<string>(AUTH_COOKIE_SECURE_ENV_KEY);
+		const explicit = this.configService.getOrThrow<string>(AUTH_COOKIE_SECURE_ENV_KEY);
 		if (explicit === BOOLEAN_TRUE_STRING) return true;
 		if (explicit === BOOLEAN_FALSE_STRING) return false;
-		return this.configService.get<string>(NODE_ENV_ENV_KEY) === NODE_ENV_PRODUCTION;
+		return this.configService.getOrThrow<string>(NODE_ENV_ENV_KEY) === NODE_ENV_PRODUCTION;
 	}
 
 	public getCookieConfig(): {
@@ -81,8 +79,8 @@ export class ConfigCookieService {
 
 	public getCookieNames(): { access: string; refresh: string } {
 		return {
-			access: this.configService.get<string>(ACCESS_COOKIE_NAME_ENV_KEY) || DEFAULT_ACCESS_COOKIE_NAME,
-			refresh: this.configService.get<string>(REFRESH_COOKIE_NAME_ENV_KEY) || DEFAULT_REFRESH_COOKIE_NAME,
+			access: this.configService.getOrThrow<string>(ACCESS_COOKIE_NAME_ENV_KEY) || DEFAULT_ACCESS_COOKIE_NAME,
+			refresh: this.configService.getOrThrow<string>(REFRESH_COOKIE_NAME_ENV_KEY) || DEFAULT_REFRESH_COOKIE_NAME,
 		};
 	}
 }

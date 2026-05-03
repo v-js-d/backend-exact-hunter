@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { User, UserRole } from 'generated/prisma/client';
+import { IAuthBuildPayload } from '../types/authenticated-context.interface';
 import { EnumAuthError } from '../consts/auth.errors';
-import { AuthSessionRequestDto } from '../dto/auth-session/auth-session.request.dto';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
 import { AuthSessionUserDto } from '../dto/auth-session/auth-session-user.dto';
 import { MeResponseDto } from '../dto/me/me-response.dto';
-import { AuthenticatedUser } from '../types/authenticated-user.type';
+import { AuthenticatedUser, AuthenticatedUserProfile } from '../types/authenticated-user.interface';
 import { AuthContextService } from './auth-context.service';
-import { AuthRequestMetaService } from './auth-request-meta.service';
+import { AuthIRequestMetaService } from './auth-request-meta.service';
 import { AuthCookieService, EnumCookieError } from '@/common/cookie';
 import { RoleContextService } from '@/modules/role-context';
 import { AuthTokenPair, TokenService } from '@/modules/token';
@@ -18,7 +19,7 @@ export class AuthService {
 	constructor(
 		private readonly tokenService: TokenService,
 		private readonly authCookieService: AuthCookieService,
-		private readonly authRequestMetaService: AuthRequestMetaService,
+		private readonly authIRequestMetaService: AuthIRequestMetaService,
 		private readonly userService: UserService,
 		private readonly roleContextService: RoleContextService,
 		private readonly authContextService: AuthContextService,
@@ -36,30 +37,29 @@ export class AuthService {
 			//если будем менять - тут надо будет изменить
 			throw new UnauthorizedException(EnumAuthError.ROLE_NOT_ALLOWED);
 		}
-		const buildData: AuthSessionRequestDto = {
+		const buildData: IAuthBuildPayload = {
 			roleContextId: roleContext.id,
 			userId: userId,
 			userRole: roleContext.userRole,
 		};
 
 		const payload = await this.authContextService.buildAccessPayload(buildData);
-		const requestMeta = this.authRequestMetaService.fromRequest(request);
+		const requestMeta = this.authIRequestMetaService.fromRequest(request);
 		const pair = await this.tokenService.generateTokenPair(payload, requestMeta);
 		return pair;
 	}
-	getAuthenticatedUser(user: User, userRole: UserRole): AuthSessionUserDto {
+	getAuthenticatedUser(user: User | AuthenticatedUserProfile, userRole: UserRole): AuthSessionUserDto {
 		return {
 			id: user.id,
-			email: user.email,
+			email: user.email ?? undefined,
+			phone: user.phone ?? undefined,
+			identifierType: user.identifierType,
 			role: userRole,
 			isActivated: user.isActivated,
 		};
 	}
 
-	async refresh(
-		request: Request,
-		response: Response,
-	): Promise<{ tokens: AuthTokenPair; ok: true; user: AuthSessionUserDto }> {
+	async refresh(request: Request, response: Response): Promise<AuthResponseDto> {
 		const refreshToken = this.authCookieService.getRefreshToken(request);
 		const accessToken = this.authCookieService.getAccessToken(request);
 
@@ -68,40 +68,29 @@ export class AuthService {
 			throw new UnauthorizedException(EnumCookieError.REFRESH_COOKIE_MISSING);
 		}
 
-		try {
-			const payload = await this.tokenService.decodeAccessTokenIgnoringExpiration(accessToken);
-			const meta = this.authRequestMetaService.fromRequest(request);
+		const payload = await this.tokenService.decodeAccessTokenIgnoringExpiration(accessToken);
+		const meta = this.authIRequestMetaService.fromRequest(request);
 
-			await this.tokenService.validateRefreshToken(refreshToken, payload.sub, payload.roleContextId, meta.deviceId);
+		await this.tokenService.validateRefreshToken(refreshToken, payload.sub, payload.roleContextId, meta.deviceId);
 
-			const newPair = await this.tokenService.rotateRefreshToken(payload, meta);
+		const newPair = await this.tokenService.rotateRefreshToken(payload, meta);
 
-			const user = await this.userService.findById(payload.sub);
-			if (!user) {
-				this.authCookieService.clearAuthCookies(response);
-				throw new UnauthorizedException();
-			}
-
-			return {
-				tokens: newPair,
-				ok: true,
-				user: {
-					id: user.id,
-					email: user.email,
-					role: payload.userRole,
-					isActivated: user.isActivated,
-				},
-			};
-		} catch {
+		const user = await this.userService.findById(payload.sub);
+		if (!user) {
 			this.authCookieService.clearAuthCookies(response);
 			throw new UnauthorizedException();
 		}
+
+		return {
+			tokens: newPair,
+			user: this.getAuthenticatedUser(user, payload.userRole),
+		};
 	}
 
 	async logout(currentUser: AuthenticatedUser, request: Request, response: Response): Promise<void> {
-		const requestMeta = this.authRequestMetaService.fromRequest(request);
+		const IRequestMeta = this.authIRequestMetaService.fromRequest(request);
 		try {
-			await this.tokenService.removeToken(currentUser.user.id, currentUser.roleContextId, requestMeta.deviceId);
+			await this.tokenService.removeToken(currentUser.user.id, currentUser.roleContextId, IRequestMeta.deviceId);
 		} finally {
 			this.authCookieService.clearAuthCookies(response);
 		}
@@ -109,13 +98,7 @@ export class AuthService {
 
 	me(current: AuthenticatedUser): MeResponseDto {
 		return {
-			user: {
-				id: current.user.id,
-				email: current.user.email,
-				role: current.currentRole,
-				userRoleName: current.hrRoleName ?? null,
-				isActivated: current.user.isActivated,
-			},
+			user: this.getAuthenticatedUser(current.user, current.currentRole),
 		};
 	}
 

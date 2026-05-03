@@ -12,7 +12,8 @@ export const NODE_ENV_ENV_KEY = 'NODE_ENV';
 export const DEFAULT_ACCESS_COOKIE_NAME = 'access_token';
 export const DEFAULT_REFRESH_COOKIE_NAME = 'refresh_token';
 
-export const SAME_SITE_LAX: CookieOptions['sameSite'] = 'lax';
+export const SAME_SITE_LAX: CookieOptions['sameSite'] = 'lax'; // настройка для однонго домена разных поддоменов
+export const SAME_SITE_DEV: CookieOptions['sameSite'] = 'none'; // настройка для разработки для разных доменов
 export const COOKIE_PATH_ROOT = '/';
 export const BOOLEAN_TRUE_STRING = 'true';
 export const BOOLEAN_FALSE_STRING = 'false';

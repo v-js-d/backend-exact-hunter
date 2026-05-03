@@ -2,7 +2,7 @@ import { UserRole } from 'generated/prisma/enums';
 
 export type { AuthTokenPair } from '@/common/auth';
 
-export interface AccessTokenPayload {
+export interface IAccessTokenPayload {
 	sub: string;
 	roleContextId: string;
 	userRole: UserRole;
@@ -10,14 +10,14 @@ export interface AccessTokenPayload {
 	hrRoleName?: string | null;
 }
 
-export interface RequestMeta {
+export interface IRequestMeta {
 	deviceId: string;
 	deviceName?: string;
 	userAgent?: string;
 	ipAddress?: string;
 }
 
-export interface SaveTokenParams {
+export interface ISaveTokenParams {
 	userId: string;
 	roleContextId: string;
 	refreshTokenHash: string;

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from 'generated/prisma/client';
+import { EnumIdentifierType, User } from 'generated/prisma/client';
 import { ICreateUser } from '../types/user.type';
 import { UserRepository } from '../repositories/user.repository';
 import { UserWithRoleContexts } from '../types/user-with-role-contexts.type';
@@ -12,16 +12,19 @@ export class UserService {
 		return await this.userRepository.findById(id);
 	}
 
-	async findByEmail(email: string): Promise<User | null> {
-		return await this.userRepository.findByEmail(email);
+	async findByIdentifier(identifier: string, type: EnumIdentifierType): Promise<User | null> {
+		return await this.userRepository.findByIdentifier(identifier, type);
 	}
 
 	async findByIdWithRoleContexts(id: string): Promise<UserWithRoleContexts | null> {
 		return await this.userRepository.findByIdWithRoleContexts(id);
 	}
 
-	async findByEmailWithRoleContexts(email: string): Promise<UserWithRoleContexts | null> {
-		return await this.userRepository.findByEmailWithRoleContexts(email);
+	async findByIdentifierWithRoleContexts(
+		identifier: string,
+		type: EnumIdentifierType,
+	): Promise<UserWithRoleContexts | null> {
+		return await this.userRepository.findByIdentifierWithRoleContexts(identifier, type);
 	}
 
 	async create(user: ICreateUser): Promise<User> {

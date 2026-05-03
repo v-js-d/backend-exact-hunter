@@ -3,11 +3,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import ms, { StringValue } from 'ms';
-import { AccessTokenPayload, AuthTokenPair, RequestMeta } from '../types/token.type';
+import { IAccessTokenPayload, AuthTokenPair, IRequestMeta } from '../types/token.type';
 import { TokenRepository } from '../repositories/token.repository';
-import { BCRYPT_SALT_ROUNDS, EnumTokenConfig, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
-import { getExpiresInFromConfig, getSecretFromConfig, getTtlFromConfig } from '../utils/get-token-configs.utils';
+import { BCRYPT_SALT_ROUNDS, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
+import { getTtlFromConfig } from '../utils/get-token-configs.utils';
 
 @Injectable()
 export class TokenService {
@@ -17,19 +16,23 @@ export class TokenService {
 		private readonly tokenRepository: TokenRepository,
 	) {}
 
-	private calculateRefreshExpiry(): Date {
-		const ttl = getTtlFromConfig(this.configService);
-		return new Date(Date.now() + ms(ttl as StringValue));
+	/** Только полезная нагрузка access JWT — без `exp`/`iat`/пр., чтобы `sign` не конфликтовал с `expiresIn` из модуля. */
+	private pickSignPayload(payload: IAccessTokenPayload): IAccessTokenPayload {
+		return {
+			sub: payload.sub,
+			roleContextId: payload.roleContextId,
+			userRole: payload.userRole,
+			companyId: payload.companyId ?? null,
+			hrRoleName: payload.hrRoleName ?? null,
+		};
 	}
 
-	generateAccessToken(payload: AccessTokenPayload): string {
-		const secret = getSecretFromConfig(this.configService);
-		const expiresIn = getExpiresInFromConfig(this.configService);
+	private calculateRefreshExpiry(): Date {
+		return new Date(Date.now() + getTtlFromConfig(this.configService));
+	}
 
-		return this.jwtService.sign(
-			{ ...payload },
-			{ secret, expiresIn: expiresIn as `${number}${'s' | 'm' | 'h' | 'd'}` },
-		);
+	generateAccessToken(payload: IAccessTokenPayload): string {
+		return this.jwtService.sign(this.pickSignPayload(payload));
 	}
 
 	generateRefreshToken(): string {
@@ -44,7 +47,7 @@ export class TokenService {
 		return bcrypt.compare(plain, hash);
 	}
 
-	async saveToken(userId: string, roleContextId: string, refreshToken: string, meta: RequestMeta): Promise<void> {
+	async saveToken(userId: string, roleContextId: string, refreshToken: string, meta: IRequestMeta): Promise<void> {
 		const refreshTokenHash = await this.hashRefreshToken(refreshToken);
 		const expiresAt = this.calculateRefreshExpiry();
 
@@ -60,7 +63,7 @@ export class TokenService {
 		});
 	}
 
-	async generateTokenPair(payload: AccessTokenPayload, meta: RequestMeta): Promise<AuthTokenPair> {
+	async generateTokenPair(payload: IAccessTokenPayload, meta: IRequestMeta): Promise<AuthTokenPair> {
 		const accessToken = this.generateAccessToken(payload);
 		const refreshToken = this.generateRefreshToken();
 
@@ -69,11 +72,10 @@ export class TokenService {
 		return { accessToken, refreshToken };
 	}
 
-	async validateAccessToken(accessToken: string): Promise<AccessTokenPayload> {
+	async validateAccessToken(accessToken: string): Promise<IAccessTokenPayload> {
 		try {
-			return await this.jwtService.verifyAsync<AccessTokenPayload>(accessToken, {
-				secret: this.configService.getOrThrow<string>(EnumTokenConfig.JWT_SECRET),
-			});
+			const decoded = await this.jwtService.verifyAsync<IAccessTokenPayload>(accessToken);
+			return this.pickSignPayload(decoded);
 		} catch (error) {
 			if (error instanceof TokenExpiredError) {
 				throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_EXPIRED);
@@ -87,13 +89,14 @@ export class TokenService {
 
 	/**
 	 * Декодирует access JWT и проверяет подпись, но игнорирует exp.
-	 * Нужен для `POST /auth/refresh` (и логина ротации): по просроченному access
-	 * с валидной подписью узнаём `sub` и `roleContextId` до проверки refresh в БД.
+	 * Нужен для `POST /auth/refresh`: по просроченному access узнаём `sub` и `roleContextId` до проверки refresh в БД.
 	 */
-	async decodeAccessTokenIgnoringExpiration(accessToken: string): Promise<AccessTokenPayload> {
+	async decodeAccessTokenIgnoringExpiration(accessToken: string): Promise<IAccessTokenPayload> {
 		try {
-			const secret = getSecretFromConfig(this.configService);
-			return await this.jwtService.verifyAsync<AccessTokenPayload>(accessToken, { secret, ignoreExpiration: true });
+			const decoded = await this.jwtService.verifyAsync<IAccessTokenPayload>(accessToken, {
+				ignoreExpiration: true,
+			});
+			return this.pickSignPayload(decoded);
 		} catch {
 			throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);
 		}
@@ -123,7 +126,7 @@ export class TokenService {
 		}
 	}
 
-	async rotateRefreshToken(payload: AccessTokenPayload, meta: RequestMeta): Promise<AuthTokenPair> {
+	async rotateRefreshToken(payload: IAccessTokenPayload, meta: IRequestMeta): Promise<AuthTokenPair> {
 		const existing = await this.tokenRepository.findByUserAndDevice(payload.sub, payload.roleContextId, meta.deviceId);
 
 		if (existing) {

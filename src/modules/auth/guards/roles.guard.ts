@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Unauthor
 import { Reflector } from '@nestjs/core';
 import { UserRole } from 'generated/prisma/enums';
 import { EnumAuthError } from '../consts/auth.errors';
-import { AuthenticatedUser } from '../types/authenticated-user.type';
+import { AuthenticatedUser } from '../types/authenticated-user.interface';
 import { ROLES_METADATA_KEY } from '@/common/decorators';
 
 /**

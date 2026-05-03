@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MeUserDto } from './me-user.dto';
+import { AuthSessionUserDto } from '../auth-session/auth-session-user.dto';
 
 export class MeResponseDto {
-	@ApiProperty({ type: () => MeUserDto })
-	user!: MeUserDto;
+	@ApiProperty({ type: () => AuthSessionUserDto })
+	user!: AuthSessionUserDto;
 }
