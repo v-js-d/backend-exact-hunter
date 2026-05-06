@@ -5,7 +5,7 @@ import { EnumTokenError } from '@/modules/token/consts/token.consts';
 import { AuthCookieService } from '@/common/cookie';
 
 /**
- * Cookie-only guard: валидирует access JWT из access-куки (Passport `access-jwt`).
+ * Guard: валидирует access JWT через Passport `access-jwt` (Bearer или access-кука).
  * Просроченный / невалидный / отсутствующий access → 401 с кодом из `EnumTokenError`
  * (фронт сам вызывает `POST /auth/refresh` с куками).
  */
@@ -45,7 +45,13 @@ export class AccessJwtGuard extends AuthGuard('access-jwt') {
 		}
 
 		const request = this.getRequest(context) as Request;
-		if (!this.authCookieService.getAccessToken(request)) {
+		// Проверяем наличие Bearer токена в заголовке для работы swagger по bearer token
+		const hasBearer =
+			typeof request.headers.authorization === 'string' && request.headers.authorization.startsWith('Bearer ');
+		// Проверяем наличие access-куки для работы в браузере
+		const hasCookie = Boolean(this.authCookieService.getAccessToken(request));
+		// Если нет ни Bearer токена, ни access-куки, то возвращаем 401
+		if (!hasBearer && !hasCookie) {
 			throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_MISSING);
 		}
 		throw new UnauthorizedException(EnumTokenError.ACCESS_TOKEN_INVALID);

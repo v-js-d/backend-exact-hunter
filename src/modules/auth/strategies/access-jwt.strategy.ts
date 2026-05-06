@@ -17,8 +17,9 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
 	) {
 		const secret = getSecretFromConfig(configService);
 		const extractor = (request: Request) => authCookieService.getAccessToken(request) ?? null;
+		// Сначала Bearer (Swagger UI / curl), затем access-кука (браузер).
 		super({
-			jwtFromRequest: ExtractJwt.fromExtractors([extractor]),
+			jwtFromRequest: ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderAsBearerToken(), extractor]),
 			ignoreExpiration: false,
 			secretOrKey: secret,
 		});
