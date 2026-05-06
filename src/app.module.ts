@@ -10,6 +10,7 @@ import { SmokeModule } from '@/modules/smoke';
 import { TokenModule } from '@/modules/token';
 import { CookieModule } from '@/common/cookie';
 import { UserModule } from '@/modules/user';
+import { MailModule } from '@/modules/mail';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { UserModule } from '@/modules/user';
 		TokenModule,
 		UserModule,
 		AuthModule,
+		MailModule,
 	],
 	providers: [GlobalExceptionFilter, GlobalExceptionFilterLogger],
 })

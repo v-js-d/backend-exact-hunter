@@ -6,4 +6,5 @@ export interface ICreateUser {
 	identifierType: EnumIdentifierType;
 	password: string;
 	role: UserRole;
+	activationLink: string;
 }

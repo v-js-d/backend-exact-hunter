@@ -53,6 +53,22 @@ export class AuthController {
 		return await this.registerUseCase.execute(body, request);
 	}
 
+	@ApiOperation({ summary: 'Activate' })
+	@ApiParam({ name: 'link', description: 'Activate link' })
+	@SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
+	@HttpCode(HttpStatus.CREATED)
+	@ApiErrorResponse([
+		HttpStatus.BAD_REQUEST,
+		HttpStatus.CONFLICT,
+		HttpStatus.UNAUTHORIZED,
+		HttpStatus.INTERNAL_SERVER_ERROR,
+	])
+	@ApiSuccessResponse(AuthResponseDto)
+	@Get('activate/:link')
+	async activate(@Param('link') link: string, @Req() req: Request): Promise<AuthResponseDto> {
+		return await this.authService.activate(req, link);
+	}
+
 	@Post('login')
 	@SetAuthCookie() //устанавливает токены в куки, удаляет их из ответа
 	@HttpCode(HttpStatus.OK)

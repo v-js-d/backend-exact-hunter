@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import type { Request } from 'express';
@@ -36,6 +37,11 @@ export class RegisterUseCase {
 		throw new BadRequestException(EnumAuthError.INVALID_IDENTIFIER);
 	}
 
+	private generateActivationLink(): string {
+		const activationLink = randomUUID();
+		return activationLink;
+	}
+
 	async execute(dto: IdentifyDto, request: Request): Promise<AuthResponseDto> {
 		this.assertRegisterableRole(dto.role);
 		if (!dto.identifier && !dto.type) {
@@ -55,6 +61,7 @@ export class RegisterUseCase {
 			identifierType: dto.type,
 			password: passwordHash,
 			role: dto.role,
+			activationLink: this.generateActivationLink(),
 		});
 
 		/** Пока без письма: сразу «подтверждённая» учётка. */

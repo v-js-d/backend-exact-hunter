@@ -25,6 +25,18 @@ export class AuthService {
 		private readonly authContextService: AuthContextService,
 	) {}
 
+	async activate(request: Request, link: string): Promise<AuthResponseDto> {
+		const user = await this.userService.activateUser(link);
+		const activated = await this.userService.update(user.id, { isActivated: true });
+		const userRole = user.roleContexts[0].userRole; //пока что берем первую так как у нас один user = одна роль в дальнейем можно будет переделать на отдельные активации
+		const pair = await this.getAuthenticatedToken(request, activated.id, userRole);
+		const authenticatedUserData = this.getAuthenticatedUser(activated, userRole);
+		return {
+			tokens: pair,
+			user: authenticatedUserData,
+		};
+	}
+
 	async getAuthenticatedToken(request: Request, userId: string, userRole: UserRole): Promise<AuthTokenPair> {
 		const roleContext = await this.roleContextService.findFirstForUserWithHrRole(userId, userRole);
 		if (!roleContext) {
