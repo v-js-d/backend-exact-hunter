@@ -9,6 +9,8 @@ import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
 import { IdentifyDto } from '../dto/identify/identify.dto';
 import { BCRYPT_SALT_ROUNDS } from '@/modules/token';
 import { UserService } from '@/modules/user';
+import { MailService } from '@/modules/mail';
+import { EnumEmailTextByRoleType } from '@/modules/mail/templates/type/text.type';
 
 /**
  * Регистрация пользователя. Пароль хешируется перед сохранением.
@@ -19,6 +21,7 @@ export class RegisterUseCase {
 	constructor(
 		private readonly userService: UserService,
 		private readonly authService: AuthService,
+		private readonly mailService: MailService,
 	) {}
 
 	private assertRegisterableRole(role: UserRole): asserts role is typeof UserRole.CANDIDATE | typeof UserRole.EMPLOYER {
@@ -54,20 +57,32 @@ export class RegisterUseCase {
 		}
 
 		const passwordHash = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
-
+		const activationLink = this.generateActivationLink();
 		const created = await this.userService.create({
 			email: dto.type === EnumIdentifierType.EMAIL ? dto.identifier : undefined,
 			phone: dto.type === EnumIdentifierType.PHONE ? dto.identifier : undefined,
 			identifierType: dto.type,
 			password: passwordHash,
 			role: dto.role,
-			activationLink: this.generateActivationLink(),
+			activationLink,
 		});
 
-		/** Пока без письма: сразу «подтверждённая» учётка. */
-		const activated = await this.userService.update(created.id, { isActivated: true });
-		const pair = await this.authService.getAuthenticatedToken(request, activated.id, dto.role);
-		const user = this.authService.getAuthenticatedUser(activated, dto.role);
+		if (dto.type === EnumIdentifierType.EMAIL && created.email) {
+			const emailRole =
+				dto.role === UserRole.EMPLOYER ? EnumEmailTextByRoleType.EMPLOYER : EnumEmailTextByRoleType.CANDIDATE;
+			await this.mailService.sendActivationLink({
+				email: created.email,
+				name: created.email.split('@')[0] ?? created.email,
+				activationToken: activationLink,
+				role: emailRole,
+			});
+		} else {
+			/** Пока без подтверждения по телефону: сразу «подтверждённая» учётка. */
+			await this.userService.update(created.id, { isActivated: true });
+		}
+
+		const pair = await this.authService.getAuthenticatedToken(request, created.id, dto.role);
+		const user = this.authService.getAuthenticatedUser(created, dto.role);
 		return {
 			tokens: pair,
 			user: user,

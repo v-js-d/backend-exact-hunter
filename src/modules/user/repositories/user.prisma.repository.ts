@@ -59,7 +59,8 @@ export class UserPrismaRepository implements UserRepository {
 			},
 		};
 
-		return this.prisma.user.create({ data });
+		const created = await this.prisma.user.create({ data });
+		return created;
 	}
 
 	async activateUser(link: string): Promise<UserWithRoleContexts> {
