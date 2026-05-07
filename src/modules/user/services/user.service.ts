@@ -34,6 +34,10 @@ export class UserService {
 		return await this.userRepository.activateUser(link);
 	}
 
+	async findByPasswordResetToken(token: string): Promise<User | null> {
+		return await this.userRepository.findByPasswordResetToken(token);
+	}
+
 	async update(id: string, user: Partial<User>): Promise<User> {
 		return await this.userRepository.update(id, user);
 	}

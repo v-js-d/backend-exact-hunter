@@ -75,6 +75,12 @@ export class UserPrismaRepository implements UserRepository {
 		});
 	}
 
+	async findByPasswordResetToken(token: string): Promise<User | null> {
+		return this.prisma.user.findUnique({
+			where: { passwordResetToken: token },
+		});
+	}
+
 	async update(id: string, user: Partial<User>): Promise<User> {
 		return this.prisma.user.update({
 			where: { id },

@@ -15,7 +15,7 @@ export class MailConfigService {
 
 	public getConfig(): MailConfig {
 		const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
-		const logoUrl = `${clientUrl}/icon.svg`;
+		const logoUrl = this.configService.getOrThrow<string>('LOGO_URL');
 		const brandName = this.configService.getOrThrow<string>('BRAND_NAME');
 		const mailLogin = this.configService.getOrThrow<string>('MAIL_LOGIN');
 		const from = `${brandName}. <${mailLogin}>`;

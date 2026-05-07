@@ -1,26 +1,28 @@
 model User {
-  id               String             @id @default(uuid()) @db.Uuid
-  email            String?            @unique @db.VarChar(255)
-  password         String             @db.VarChar(255)
-  isActivated      Boolean            @default(false)
-  emailVerifiedAt  DateTime?          @db.Timestamp(6)
-  activationLink   String?            @unique @db.VarChar(255)
-  identifierType   EnumIdentifierType @default(EMAIL)
-  phone            String?            @unique @db.VarChar(20)
-  createdAt        DateTime           @default(now()) @db.Timestamp(6)
-  updatedAt        DateTime           @updatedAt @db.Timestamp(6)
-  createdBy        String?            @db.Uuid
-  createdByUser    User?              @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
-  updatedBy        String?            @db.Uuid
-  updatedByUser    User?              @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
-  createdUsers     User[]             @relation("UsersCreatedBy")
-  updatedUsers     User[]             @relation("UsersUpdatedBy")
-  roleContexts     RoleContext[]
-  tokens           Token[]
-  candidateProfile CandidateProfile?
-  ownedCompanies   Company[]          @relation("CompanyOwner")
-  createdCompanies Company[]          @relation("CompanyCreatedBy")
-  updatedCompanies Company[]          @relation("CompanyUpdatedBy")
+  id                   String             @id @default(uuid()) @db.Uuid
+  email                String?            @unique @db.VarChar(255)
+  password             String             @db.VarChar(255)
+  isActivated          Boolean            @default(false)
+  emailVerifiedAt      DateTime?          @db.Timestamp(6)
+  activationLink       String?            @unique @db.VarChar(255)
+  passwordResetToken   String?            @unique @db.VarChar(255)
+  passwordResetExpires DateTime?          @db.Timestamp(6)
+  identifierType       EnumIdentifierType @default(EMAIL)
+  phone                String?            @unique @db.VarChar(20)
+  createdAt            DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime           @updatedAt @db.Timestamp(6)
+  createdBy            String?            @db.Uuid
+  createdByUser        User?              @relation("UsersCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedBy            String?            @db.Uuid
+  updatedByUser        User?              @relation("UsersUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+  createdUsers         User[]             @relation("UsersCreatedBy")
+  updatedUsers         User[]             @relation("UsersUpdatedBy")
+  roleContexts         RoleContext[]
+  tokens               Token[]
+  candidateProfile     CandidateProfile?
+  ownedCompanies       Company[]          @relation("CompanyOwner")
+  createdCompanies     Company[]          @relation("CompanyCreatedBy")
+  updatedCompanies     Company[]          @relation("CompanyUpdatedBy")
 
   @@index([email])
   @@index([createdBy])

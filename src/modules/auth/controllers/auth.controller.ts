@@ -21,22 +21,31 @@ import {
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthLogoutResponseDto } from '../dto/logout/auth-logout.response.dto';
-import { RegisterUseCase } from '../use-cases/register.use-case';
+import { ForgotPasswordUseCase } from '../use-cases/forgot-password.use-case';
 import { LoginUseCase } from '../use-cases/login.use-case';
+import { RegisterUseCase } from '../use-cases/register.use-case';
+import { ResetPasswordUseCase } from '../use-cases/reset-password.use-case';
 import { AuthService } from '../services/auth.service';
 import type { AuthenticatedUser } from '../types/authenticated-user.interface';
 import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
+import { ForgotPasswordDto } from '../dto/password/forgot-password.dto';
+import { PasswordActionResultDto } from '../dto/password/password-action-result.dto';
+import { ResetPasswordDto } from '../dto/password/reset-password.dto';
 import { IdentifyDto } from '../dto/identify/identify.dto';
 import { MeResponseDto } from '../dto/me/me-response.dto';
 import { ApiErrorResponse, ApiSuccessResponse, AuthAccess, CurrentUser, SetAuthCookie } from '@/common/decorators';
+import { AuthCookieService } from '@/common/cookie';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
+		private readonly authCookieService: AuthCookieService,
 		private readonly registerUseCase: RegisterUseCase,
 		private readonly loginUseCase: LoginUseCase,
+		private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+		private readonly resetPasswordUseCase: ResetPasswordUseCase,
 	) {}
 
 	@Post('register')
@@ -130,5 +139,36 @@ export class AuthController {
 	@ApiErrorResponse([HttpStatus.INTERNAL_SERVER_ERROR])
 	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<boolean> {
 		return await this.authService.delete(id);
+	}
+
+	@ApiOperation({
+		summary: 'Запросить письмо со ссылкой для сброса пароля',
+		description:
+			'При валидном теле запроса ответ один и тот же — без раскрытия, существует ли пользователь с таким email.',
+	})
+	@HttpCode(HttpStatus.OK)
+	@ApiErrorResponse([HttpStatus.BAD_REQUEST, HttpStatus.INTERNAL_SERVER_ERROR])
+	@ApiSuccessResponse(PasswordActionResultDto)
+	@Post('forgot-password')
+	async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<PasswordActionResultDto> {
+		await this.forgotPasswordUseCase.execute(dto);
+		return { success: true };
+	}
+
+	@ApiOperation({
+		summary: 'Установить новый пароль по одноразовому токену из письма',
+		description: 'Токен одноразовый; после смены пароля все refresh-сессии отзываются. Очищает auth-cookies в ответе.',
+	})
+	@HttpCode(HttpStatus.OK)
+	@ApiErrorResponse([HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED, HttpStatus.INTERNAL_SERVER_ERROR])
+	@ApiSuccessResponse(PasswordActionResultDto)
+	@Post('reset-password')
+	async resetPassword(
+		@Body() dto: ResetPasswordDto,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<PasswordActionResultDto> {
+		await this.resetPasswordUseCase.execute(dto);
+		this.authCookieService.clearAuthCookies(res);
+		return { success: true };
 	}
 }
