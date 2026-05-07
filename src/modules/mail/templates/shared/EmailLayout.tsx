@@ -38,7 +38,7 @@ export function EmailLayout({ preview, heroTitle, heroSubtitle, brandName, logoU
 								<tbody>
 									<tr>
 										<td className="pr-3 align-middle">
-											<Img src={logoUrl} width={44} height={53} alt="logo" className="block" />
+											<Img src={logoUrl} width={55} height={55} alt="logo" className="block" />
 										</td>
 										<td className="align-middle">
 											<Text className="m-0 text-[32px] font-bold leading-none tracking-tight text-email-primary">
