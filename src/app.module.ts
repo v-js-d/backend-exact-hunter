@@ -14,6 +14,7 @@ import { UserModule } from '@/modules/user';
 @Module({
 	imports: [
 		ConfigModule.forRoot({
+			isGlobal: true,
 			validationSchema: Joi.object({
 				PORT: Joi.number().port().required(),
 			}),
