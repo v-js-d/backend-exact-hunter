@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { getCorsConfig, getSwaggerConfig, getValidationConfig } from '@core/config';
-import { GlobalExceptionFilter, ResponseInterceptor } from '@core/response';
+import { AllExceptionsFilter, ResponseInterceptor } from '@core/response';
 import { AppModule } from '@/app.module';
 
 const DEFAULT_PORT = 3001;
@@ -15,7 +15,7 @@ async function bootstrap() {
 	getCorsConfig(app, configService);
 	getSwaggerConfig(app);
 	getValidationConfig(app);
-	app.useGlobalFilters(app.get(GlobalExceptionFilter));
+	app.useGlobalFilters(app.get(AllExceptionsFilter));
 	app.useGlobalInterceptors(new ResponseInterceptor());
 	const port = configService.get<number>('PORT') ?? DEFAULT_PORT;
 	await app.listen(port, '0.0.0.0');
