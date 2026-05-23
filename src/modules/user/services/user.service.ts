@@ -30,6 +30,13 @@ export class UserService {
 	async create(user: ICreateUser): Promise<User> {
 		return await this.userRepository.create(user);
 	}
+	async activateUser(link: string): Promise<UserWithRoleContexts> {
+		return await this.userRepository.activateUser(link);
+	}
+
+	async findByPasswordResetToken(token: string): Promise<User | null> {
+		return await this.userRepository.findByPasswordResetToken(token);
+	}
 
 	async update(id: string, user: Partial<User>): Promise<User> {
 		return await this.userRepository.update(id, user);

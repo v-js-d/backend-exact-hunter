@@ -44,7 +44,14 @@ export class UserPrismaRepository implements UserRepository {
 	async create(user: ICreateUser): Promise<User> {
 		const data: Prisma.UserCreateInput = {
 			email: user.email,
+			phone: user.phone,
+			identifierType: user.identifierType,
 			password: user.password,
+			isActivated: false,
+			activationLink: user.activationLink,
+			emailVerifiedAt: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
 			roleContexts: {
 				create: {
 					userRole: user.role,
@@ -52,7 +59,27 @@ export class UserPrismaRepository implements UserRepository {
 			},
 		};
 
-		return this.prisma.user.create({ data });
+		const created = await this.prisma.user.create({ data });
+		return created;
+	}
+
+	async activateUser(link: string): Promise<UserWithRoleContexts> {
+		return await this.prisma.user.update({
+			where: { activationLink: link },
+			data: {
+				isActivated: true,
+				activationLink: null,
+				emailVerifiedAt: new Date(),
+				updatedAt: new Date(),
+			},
+			include: USER_WITH_ROLE_CONTEXTS_INCLUDE,
+		});
+	}
+
+	async findByPasswordResetToken(token: string): Promise<User | null> {
+		return this.prisma.user.findUnique({
+			where: { passwordResetToken: token },
+		});
 	}
 
 	async update(id: string, user: Partial<User>): Promise<User> {

@@ -11,6 +11,8 @@ export abstract class UserRepository {
 		type: EnumIdentifierType,
 	): Promise<UserWithRoleContexts | null>;
 	abstract create(user: ICreateUser): Promise<User>;
+	abstract activateUser(link: string): Promise<UserWithRoleContexts>;
+	abstract findByPasswordResetToken(token: string): Promise<User | null>;
 	abstract update(id: string, user: Partial<User>): Promise<User>;
 	abstract delete(id: string): Promise<boolean>;
 }
