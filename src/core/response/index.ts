@@ -1,5 +1,7 @@
 export * from './filters/global-exception.filter';
 export * from './filters/lib/global-exception.log.util';
+export * from './filters/all-exception.filter';
+export * from './filters/lib/all-exception.log.util';
 export * from './interceptors/response.interceptor';
 export * from './interceptors/auth-cookie.interceptor';
 export * from './interface/response.interface';

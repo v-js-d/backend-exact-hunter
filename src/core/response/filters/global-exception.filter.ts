@@ -11,6 +11,7 @@ import {
 import { Request, Response } from 'express';
 import { IResponseError } from '../interface/response.interface';
 import { GlobalExceptionFilterLogger } from './lib/global-exception.log.util';
+import { ValidationException } from './validation.exception';
 
 @Catch()
 @Injectable()
@@ -67,7 +68,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		const error: Error = this.getErrorResponse(exception);
 
 		// Обработка валидационных ошибок
-		if (exception instanceof BadRequestException && typeof exception.getResponse === 'function') {
+		if (exception instanceof ValidationException) {
 			return this.handleValidationException(exception, request, response);
 		}
 
