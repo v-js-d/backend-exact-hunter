@@ -1,18 +1,21 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { User, UserRole } from 'generated/prisma/client';
-import { IAuthBuildPayload } from '../types/authenticated-context.interface';
-import { EnumAuthError } from '../consts/auth.errors';
-import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
-import { AuthSessionUserDto } from '../dto/auth-session/auth-session-user.dto';
-import { MeResponseDto } from '../dto/me/me-response.dto';
-import { AuthenticatedUser, AuthenticatedUserProfile } from '../types/authenticated-user.interface';
-import { AuthContextService } from './auth-context.service';
-import { AuthIRequestMetaService } from './auth-request-meta.service';
+
 import { AuthCookieService, EnumCookieError } from '@/common/cookie';
 import { RoleContextService } from '@/modules/role-context';
 import { AuthTokenPair, TokenService } from '@/modules/token';
 import { UserService } from '@/modules/user';
+
+import { AuthContextService } from './auth-context.service';
+import { AuthIRequestMetaService } from './auth-request-meta.service';
+
+import { EnumAuthError } from '../consts/auth.errors';
+import { AuthSessionUserDto } from '../dto/auth-session/auth-session-user.dto';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
+import { MeResponseDto } from '../dto/me/me-response.dto';
+import { IAuthBuildPayload } from '../types/authenticated-context.interface';
+import { AuthenticatedUser, AuthenticatedUserProfile } from '../types/authenticated-user.interface';
 
 @Injectable()
 export class AuthService {

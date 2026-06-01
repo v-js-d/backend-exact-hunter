@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+
 import { ValidationException } from '@/core/response/filters/validation.exception';
 
 export const getValidationConfig = (app: INestApplication) => {

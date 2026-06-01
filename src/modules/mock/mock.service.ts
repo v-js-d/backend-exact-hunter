@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+
 import { vacancies, Vacancy } from './vacancies';
 
 @Injectable()

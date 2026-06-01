@@ -1,10 +1,10 @@
 // @ts-check
 import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
 import eslintPluginImport from 'eslint-plugin-import';
-import tseslint from 'typescript-eslint';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import { defineConfig } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig(
 	{
@@ -30,8 +30,8 @@ export default defineConfig(
 			import: eslintPluginImport,
 		},
 		rules: {
-			'import/no-default-export': 'error',
-			'import/order': 'error',
+			// 'import/no-default-export': 'error',
+			// 'import/order': 'error',
 			'@typescript-eslint/no-explicit-any': 'error',
 			'@typescript-eslint/no-floating-promises': 'warn',
 			'@typescript-eslint/no-unsafe-argument': 'warn',

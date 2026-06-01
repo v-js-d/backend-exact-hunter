@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EnumIdentifierType, User } from 'generated/prisma/client';
-import { ICreateUser } from '../types/user.type';
+
 import { UserRepository } from '../repositories/user.repository';
 import { UserWithRoleContexts } from '../types/user-with-role-contexts.type';
+import { ICreateUser } from '../types/user.type';
 
 @Injectable()
 export class UserService {

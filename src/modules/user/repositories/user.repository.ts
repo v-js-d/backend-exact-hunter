@@ -1,6 +1,7 @@
 import { EnumIdentifierType, User } from 'generated/prisma/client';
-import { ICreateUser } from '../types/user.type';
+
 import { UserWithRoleContexts } from '../types/user-with-role-contexts.type';
+import { ICreateUser } from '../types/user.type';
 
 export abstract class UserRepository {
 	abstract findById(id: string): Promise<User | null>;

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { EnumIdentifierType, UserRole } from 'generated/prisma/enums';
+
 import { IsPassword } from '@/common';
 import { IsIdentifier } from '@/common/decorators/validation/identifier-validation.decorator';
 

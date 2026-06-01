@@ -1,11 +1,13 @@
 import { randomBytes } from 'crypto';
+
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { IAccessTokenPayload, AuthTokenPair, IRequestMeta } from '../types/token.type';
-import { TokenRepository } from '../repositories/token.repository';
+
 import { BCRYPT_SALT_ROUNDS, EnumTokenError, REFRESH_TOKEN_BYTES } from '../consts/token.consts';
+import { TokenRepository } from '../repositories/token.repository';
+import { AuthTokenPair, IAccessTokenPayload, IRequestMeta } from '../types/token.type';
 import { getTtlFromConfig } from '../utils/get-token-configs.utils';
 
 @Injectable()

@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
+
 import { EnumTokenConfig } from '../consts/token.consts';
 
 /** Строка вида `15m` / `7d` для access JWT (`signOptions.expiresIn`) и для `ms`. */

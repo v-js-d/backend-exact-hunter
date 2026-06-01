@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
+
 import { SmokeErrorTypeEnum } from '../enums/smoke-error-type.enum';
 
 export class SmokeErrorQueryDto {

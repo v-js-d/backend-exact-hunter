@@ -1,4 +1,5 @@
 import { Token } from 'generated/prisma/client';
+
 import { ISaveTokenParams } from '../types/token.type';
 
 export abstract class TokenRepository {

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CookieOptions } from 'express';
 
+import { getTtlFromConfig } from '@/modules/token';
+
 import {
 	ACCESS_COOKIE_NAME_ENV_KEY,
 	AUTH_COOKIE_DOMAIN_ENV_KEY,
@@ -16,7 +18,6 @@ import {
 	REFRESH_COOKIE_NAME_ENV_KEY,
 	SAME_SITE_DEV,
 } from './cookie.consts';
-import { getTtlFromConfig } from '@/modules/token';
 
 @Injectable()
 export class ConfigCookieService {

@@ -1,12 +1,14 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
 import type { Request } from 'express';
-import { AuthenticatedUser } from '../types/authenticated-user.interface';
-import { AuthContextService } from '../services/auth-context.service';
-import { IAccessTokenPayload, getSecretFromConfig } from '@/modules/token';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
 import { AuthCookieService } from '@/common/cookie';
+import { getSecretFromConfig, IAccessTokenPayload } from '@/modules/token';
+
+import { AuthContextService } from '../services/auth-context.service';
+import { AuthenticatedUser } from '../types/authenticated-user.interface';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') {

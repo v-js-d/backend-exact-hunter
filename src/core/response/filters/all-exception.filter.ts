@@ -1,7 +1,8 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ValidationException } from './validation.exception';
+
 import { AllExceptionsFilterLogger } from './lib/all-exception.log.util';
+import { ValidationException } from './validation.exception';
 
 @Catch()
 @Injectable()

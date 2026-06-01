@@ -1,11 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import type { Request } from 'express';
-import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
+
+import { UserService } from '@/modules/user';
+
 import { EnumAuthError } from '../consts/auth.errors';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
 import { IdentifyDto } from '../dto/identify/identify.dto';
 import { AuthService } from '../services/auth.service';
-import { UserService } from '@/modules/user';
 
 @Injectable()
 export class LoginUseCase {
