@@ -1,4 +1,5 @@
 import { UserRole } from 'generated/prisma/enums';
+
 import { RoleContextWithHrRole } from '../types/role-context-access.type';
 
 export abstract class RoleContextRepository {

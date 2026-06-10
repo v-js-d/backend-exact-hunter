@@ -2,12 +2,14 @@ import { BadRequestException, ConflictException, Injectable, UnauthorizedExcepti
 import * as bcrypt from 'bcrypt';
 import type { Request } from 'express';
 import { EnumIdentifierType, UserRole } from 'generated/prisma/enums';
-import { EnumAuthError } from '../consts/auth.errors';
-import { AuthService } from '../services/auth.service';
-import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
-import { IdentifyDto } from '../dto/identify/identify.dto';
+
 import { BCRYPT_SALT_ROUNDS } from '@/modules/token';
 import { UserService } from '@/modules/user';
+
+import { EnumAuthError } from '../consts/auth.errors';
+import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
+import { IdentifyDto } from '../dto/identify/identify.dto';
+import { AuthService } from '../services/auth.service';
 
 /**
  * Регистрация пользователя. Пароль хешируется перед сохранением.

@@ -1,11 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from 'generated/prisma/enums';
-import { EnumAuthError } from '../consts/auth.errors';
-import { AuthenticatedUser } from '../types/authenticated-user.interface';
-import { IAuthBuildPayload } from '../types/authenticated-context.interface';
+
 import { RoleContextService } from '@/modules/role-context';
 import { IAccessTokenPayload } from '@/modules/token';
 import { UserService } from '@/modules/user';
+
+import { EnumAuthError } from '../consts/auth.errors';
+import { IAuthBuildPayload } from '../types/authenticated-context.interface';
+import { AuthenticatedUser } from '../types/authenticated-user.interface';
 
 @Injectable()
 export class AuthContextService {

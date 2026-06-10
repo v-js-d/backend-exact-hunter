@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { UserRole } from 'generated/prisma/enums';
-import { ROLE_CONTEXT_WITH_HR_ROLE_INCLUDE } from '../types/role-context-access.type';
-import { RoleContextRepository } from './role-context.repository';
+
 import { PrismaService } from '@/prisma';
+
+import { RoleContextRepository } from './role-context.repository';
+
+import { ROLE_CONTEXT_WITH_HR_ROLE_INCLUDE } from '../types/role-context-access.type';
 
 @Injectable()
 export class RoleContextPrismaRepository implements RoleContextRepository {

@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import cookieParser from 'cookie-parser';
 import { getCorsConfig, getSwaggerConfig, getValidationConfig } from '@core/config';
 import { AllExceptionsFilter, ResponseInterceptor } from '@core/response';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
+
 import { AppModule } from '@/app.module';
 
 const DEFAULT_PORT = 3001;

@@ -1,5 +1,6 @@
-import { EnumIdentifierType } from 'generated/prisma/enums';
 import { ValidationArguments, ValidatorConstraint, type ValidatorConstraintInterface } from 'class-validator';
+import { EnumIdentifierType } from 'generated/prisma/enums';
+
 import { IdentifyDto } from '@/modules/auth/dto/identify/identify.dto';
 
 @ValidatorConstraint({ name: 'IdentifierValidator', async: false })

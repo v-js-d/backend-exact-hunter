@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { EnumIdentifierType, Prisma, User } from 'generated/prisma/client';
-import { ICreateUser } from '../types/user.type';
-import { USER_WITH_ROLE_CONTEXTS_INCLUDE, UserWithRoleContexts } from '../types/user-with-role-contexts.type';
-import { UserRepository } from './user.repository';
+
 import { PrismaService } from '@/prisma';
+
+import { UserRepository } from './user.repository';
+
+import { ICreateUser, USER_WITH_ROLE_CONTEXTS_INCLUDE, UserWithRoleContexts } from '../types';
 
 @Injectable()
 export class UserPrismaRepository implements UserRepository {

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
+
 import { resolveDeviceIdFromHeaders } from '@/common/auth';
 import { IRequestMeta } from '@/modules/token';
 

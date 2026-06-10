@@ -1,8 +1,9 @@
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
-import { EnumTokenError } from '@/modules/token/consts/token.consts';
+
 import { AuthCookieService } from '@/common/cookie';
+import { EnumTokenError } from '@/modules/token/consts/token.consts';
 
 /**
  * Guard: валидирует access JWT через Passport `access-jwt` (Bearer или access-кука).

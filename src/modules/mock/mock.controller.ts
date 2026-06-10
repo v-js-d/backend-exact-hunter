@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+
 import { MockService } from './mock.service';
 
 @Controller('mock')

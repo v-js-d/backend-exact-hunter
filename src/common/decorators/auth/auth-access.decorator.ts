@@ -1,9 +1,11 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiForbiddenResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserRole } from 'generated/prisma/enums';
-import { Roles } from './roles.decorator';
+
 import { AccessJwtGuard } from '@/modules/auth/guards/access-jwt.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+
+import { Roles } from './roles.decorator';
 
 /**
  * Композитный декоратор для защищённых эндпоинтов.

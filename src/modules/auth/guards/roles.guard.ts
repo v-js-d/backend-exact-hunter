@@ -1,9 +1,11 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from 'generated/prisma/enums';
+
+import { ROLES_METADATA_KEY } from '@/common/decorators';
+
 import { EnumAuthError } from '../consts/auth.errors';
 import { AuthenticatedUser } from '../types/authenticated-user.interface';
-import { ROLES_METADATA_KEY } from '@/common/decorators';
 
 /**
  * Пропускает запрос, только если `request.user.currentRole` входит в список,

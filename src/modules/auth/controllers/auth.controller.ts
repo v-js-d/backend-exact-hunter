@@ -20,15 +20,17 @@ import {
 	ApiTags,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { AuthLogoutResponseDto } from '../dto/logout/auth-logout.response.dto';
-import { RegisterUseCase } from '../use-cases/register.use-case';
-import { LoginUseCase } from '../use-cases/login.use-case';
-import { AuthService } from '../services/auth.service';
-import type { AuthenticatedUser } from '../types/authenticated-user.interface';
+
+import { ApiErrorResponse, ApiSuccessResponse, AuthAccess, CurrentUser, SetAuthCookie } from '@/common/decorators';
+
 import { AuthResponseDto } from '../dto/auth-session/auth.response.dto';
 import { IdentifyDto } from '../dto/identify/identify.dto';
+import { AuthLogoutResponseDto } from '../dto/logout/auth-logout.response.dto';
 import { MeResponseDto } from '../dto/me/me-response.dto';
-import { ApiErrorResponse, ApiSuccessResponse, AuthAccess, CurrentUser, SetAuthCookie } from '@/common/decorators';
+import { AuthService } from '../services/auth.service';
+import type { AuthenticatedUser } from '../types/authenticated-user.interface';
+import { LoginUseCase } from '../use-cases/login.use-case';
+import { RegisterUseCase } from '../use-cases/register.use-case';
 
 @ApiTags('auth')
 @Controller('auth')
