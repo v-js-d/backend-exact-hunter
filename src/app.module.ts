@@ -6,7 +6,7 @@ import {
 } from '@core/response';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 
 import { CookieModule } from '@/common/cookie';
@@ -30,11 +30,17 @@ import { PrismaModule } from '@/prisma';
 				abortEarly: false,
 			},
 		}),
-		BullModule.forRoot({
-			connection: {
-				host: 'localhost',
-				port: 6379,
-			},
+		BullModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => ({
+				connection: {
+					host: configService.get<string>('REDIS_HOST'),
+					port: configService.get<number>('REDIS_PORT'),
+					password: configService.get<string>('REDIS_PASSWORD'),
+					username: configService.get<string>('REDIS_USER'),
+				},
+				defaultJobOptions: { attempts: 3 },
+			}),
 		}),
 		HealthModule,
 		SmokeModule,
