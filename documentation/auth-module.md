@@ -22,7 +22,7 @@
 
 ## DTO / валидация (`src/modules/auth/dto/...`)
 
-- **RegisterDto / LoginDto:** `email` (`@IsEmail`), `password` (`@IsPassword` → длина **8–32**), `role` — enum **Prisma** `UserRole`: `CANDIDATE` \| `EMPLOYER` \| `ADMIN` (для register/login допускаются только **CANDIDATE** и **EMPLOYER**, иначе 401 с кодом из `EnumAuthError`).
+- **RegisterDto / LoginDto:** `email` (`@IsEmail`), `password` (`@IsStrongPassord`), `role` — enum **Prisma** `UserRole`: `CANDIDATE` \| `EMPLOYER` \| `ADMIN` (для register/login допускаются только **CANDIDATE** и **EMPLOYER**, иначе 401 с кодом из `EnumAuthError`).
 - **Refresh:** body не нужен (MVP).
 - **Me:** отдельного request DTO нет — данные из `request.user` после guard.
 
